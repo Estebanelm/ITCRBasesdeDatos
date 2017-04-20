@@ -1,0 +1,24 @@
+C:\Users\Pelo\Downloads\RestWebService\RestWebService\RestWebService\bin\Debug\RestWebService.dll.config
+C:\Users\Pelo\Downloads\RestWebService\RestWebService\RestWebService\bin\Debug\RestWebService.dll
+C:\Users\Pelo\Downloads\RestWebService\RestWebService\RestWebService\bin\Debug\RestWebService.pdb
+C:\Users\Pelo\Downloads\RestWebService\RestWebService\RestWebService\bin\Debug\Company.dll
+C:\Users\Pelo\Downloads\RestWebService\RestWebService\RestWebService\bin\Debug\DAL.dll
+C:\Users\Pelo\Downloads\RestWebService\RestWebService\RestWebService\bin\Debug\ErrorHandler.dll
+C:\Users\Pelo\Downloads\RestWebService\RestWebService\RestWebService\bin\Debug\Company.pdb
+C:\Users\Pelo\Downloads\RestWebService\RestWebService\RestWebService\bin\Debug\DAL.pdb
+C:\Users\Pelo\Downloads\RestWebService\RestWebService\RestWebService\bin\Debug\ErrorHandler.pdb
+C:\Users\Pelo\Downloads\RestWebService\RestWebService\RestWebService\obj\Debug\RestWebService.csprojResolveAssemblyReference.cache
+C:\Users\Pelo\Downloads\RestWebService\RestWebService\RestWebService\obj\Debug\RestWebService.dll
+C:\Users\Pelo\Downloads\RestWebService\RestWebService\RestWebService\obj\Debug\RestWebService.pdb
+C:\Users\Pelo\Documents\Proyectos bases\Proyecto 1\RestWebService\RestWebService\bin\Debug\RestWebService.dll.config
+C:\Users\Pelo\Documents\Proyectos bases\Proyecto 1\RestWebService\RestWebService\bin\Debug\RestWebService.dll
+C:\Users\Pelo\Documents\Proyectos bases\Proyecto 1\RestWebService\RestWebService\bin\Debug\RestWebService.pdb
+C:\Users\Pelo\Documents\Proyectos bases\Proyecto 1\RestWebService\RestWebService\bin\Debug\DAL.dll
+C:\Users\Pelo\Documents\Proyectos bases\Proyecto 1\RestWebService\RestWebService\bin\Debug\ErrorHandler.dll
+C:\Users\Pelo\Documents\Proyectos bases\Proyecto 1\RestWebService\RestWebService\bin\Debug\DAL.pdb
+C:\Users\Pelo\Documents\Proyectos bases\Proyecto 1\RestWebService\RestWebService\bin\Debug\ErrorHandler.pdb
+C:\Users\Pelo\Documents\Proyectos bases\Proyecto 1\RestWebService\RestWebService\obj\Debug\RestWebService.csprojResolveAssemblyReference.cache
+C:\Users\Pelo\Documents\Proyectos bases\Proyecto 1\RestWebService\RestWebService\obj\Debug\RestWebService.dll
+C:\Users\Pelo\Documents\Proyectos bases\Proyecto 1\RestWebService\RestWebService\obj\Debug\RestWebService.pdb
+C:\Users\Pelo\Documents\Proyectos bases\Proyecto 1\RestWebService\RestWebService\bin\Debug\L3MDB.dll
+C:\Users\Pelo\Documents\Proyectos bases\Proyecto 1\RestWebService\RestWebService\bin\Debug\L3MDB.pdb

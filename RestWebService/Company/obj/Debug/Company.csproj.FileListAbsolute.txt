@@ -1,0 +1,5 @@
+C:\Users\Pelo\Downloads\RestWebService\RestWebService\Company\bin\Debug\Company.dll
+C:\Users\Pelo\Downloads\RestWebService\RestWebService\Company\bin\Debug\Company.pdb
+C:\Users\Pelo\Downloads\RestWebService\RestWebService\Company\obj\Debug\Company.dll
+C:\Users\Pelo\Downloads\RestWebService\RestWebService\Company\obj\Debug\Company.pdb
+C:\Users\Pelo\Downloads\RestWebService\RestWebService\Company\obj\Debug\Company.csprojResolveAssemblyReference.cache

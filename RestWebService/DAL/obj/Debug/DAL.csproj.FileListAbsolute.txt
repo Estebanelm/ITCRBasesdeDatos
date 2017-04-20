@@ -1,0 +1,20 @@
+C:\Users\Pelo\Downloads\RestWebService\RestWebService\DAL\bin\Debug\DAL.dll.config
+C:\Users\Pelo\Downloads\RestWebService\RestWebService\DAL\bin\Debug\DAL.dll
+C:\Users\Pelo\Downloads\RestWebService\RestWebService\DAL\bin\Debug\DAL.pdb
+C:\Users\Pelo\Downloads\RestWebService\RestWebService\DAL\bin\Debug\Company.dll
+C:\Users\Pelo\Downloads\RestWebService\RestWebService\DAL\bin\Debug\ErrorHandler.dll
+C:\Users\Pelo\Downloads\RestWebService\RestWebService\DAL\bin\Debug\Company.pdb
+C:\Users\Pelo\Downloads\RestWebService\RestWebService\DAL\bin\Debug\ErrorHandler.pdb
+C:\Users\Pelo\Downloads\RestWebService\RestWebService\DAL\obj\Debug\DAL.csprojResolveAssemblyReference.cache
+C:\Users\Pelo\Downloads\RestWebService\RestWebService\DAL\obj\Debug\DAL.dll
+C:\Users\Pelo\Downloads\RestWebService\RestWebService\DAL\obj\Debug\DAL.pdb
+C:\Users\Pelo\Documents\Proyectos bases\Proyecto 1\RestWebService\DAL\bin\Debug\DAL.dll.config
+C:\Users\Pelo\Documents\Proyectos bases\Proyecto 1\RestWebService\DAL\bin\Debug\DAL.dll
+C:\Users\Pelo\Documents\Proyectos bases\Proyecto 1\RestWebService\DAL\bin\Debug\DAL.pdb
+C:\Users\Pelo\Documents\Proyectos bases\Proyecto 1\RestWebService\DAL\bin\Debug\ErrorHandler.dll
+C:\Users\Pelo\Documents\Proyectos bases\Proyecto 1\RestWebService\DAL\bin\Debug\ErrorHandler.pdb
+C:\Users\Pelo\Documents\Proyectos bases\Proyecto 1\RestWebService\DAL\obj\Debug\DAL.csprojResolveAssemblyReference.cache
+C:\Users\Pelo\Documents\Proyectos bases\Proyecto 1\RestWebService\DAL\obj\Debug\DAL.dll
+C:\Users\Pelo\Documents\Proyectos bases\Proyecto 1\RestWebService\DAL\obj\Debug\DAL.pdb
+C:\Users\Pelo\Documents\Proyectos bases\Proyecto 1\RestWebService\DAL\bin\Debug\L3MDB.dll
+C:\Users\Pelo\Documents\Proyectos bases\Proyecto 1\RestWebService\DAL\bin\Debug\L3MDB.pdb

@@ -1,0 +1,9 @@
+C:\Users\Pelo\Downloads\RestWebService\RestWebService\Company\bin\Debug\Company.dll
+C:\Users\Pelo\Downloads\RestWebService\RestWebService\Company\bin\Debug\Company.pdb
+C:\Users\Pelo\Downloads\RestWebService\RestWebService\Company\obj\Debug\Company.dll
+C:\Users\Pelo\Downloads\RestWebService\RestWebService\Company\obj\Debug\Company.pdb
+C:\Users\Pelo\Documents\Proyectos bases\Proyecto 1\RestWebService\Company\bin\Debug\L3MDB.dll
+C:\Users\Pelo\Documents\Proyectos bases\Proyecto 1\RestWebService\Company\bin\Debug\L3MDB.pdb
+C:\Users\Pelo\Documents\Proyectos bases\Proyecto 1\RestWebService\Company\obj\Debug\L3MDB.dll
+C:\Users\Pelo\Documents\Proyectos bases\Proyecto 1\RestWebService\Company\obj\Debug\L3MDB.pdb
+C:\Users\Pelo\Documents\Proyectos bases\Proyecto 1\RestWebService\Company\obj\Debug\L3MDB.csprojResolveAssemblyReference.cache

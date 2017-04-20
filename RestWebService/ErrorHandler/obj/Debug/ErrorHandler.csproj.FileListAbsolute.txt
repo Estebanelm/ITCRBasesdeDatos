@@ -1,0 +1,9 @@
+C:\Users\Pelo\Downloads\RestWebService\RestWebService\ErrorHandler\bin\Debug\ErrorHandler.dll
+C:\Users\Pelo\Downloads\RestWebService\RestWebService\ErrorHandler\bin\Debug\ErrorHandler.pdb
+C:\Users\Pelo\Downloads\RestWebService\RestWebService\ErrorHandler\obj\Debug\ErrorHandler.dll
+C:\Users\Pelo\Downloads\RestWebService\RestWebService\ErrorHandler\obj\Debug\ErrorHandler.pdb
+C:\Users\Pelo\Documents\Proyectos bases\Proyecto 1\RestWebService\ErrorHandler\bin\Debug\ErrorHandler.dll
+C:\Users\Pelo\Documents\Proyectos bases\Proyecto 1\RestWebService\ErrorHandler\bin\Debug\ErrorHandler.pdb
+C:\Users\Pelo\Documents\Proyectos bases\Proyecto 1\RestWebService\ErrorHandler\obj\Debug\ErrorHandler.dll
+C:\Users\Pelo\Documents\Proyectos bases\Proyecto 1\RestWebService\ErrorHandler\obj\Debug\ErrorHandler.pdb
+C:\Users\Pelo\Documents\Proyectos bases\Proyecto 1\RestWebService\ErrorHandler\obj\Debug\ErrorHandler.csprojResolveAssemblyReference.cache
