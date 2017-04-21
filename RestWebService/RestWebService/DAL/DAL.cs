@@ -38,7 +38,7 @@ namespace DAL
         /// Database INSERT - Add an Employee
         /// </summary>
         /// <param name="emp"></param>
-        public void AddEmpleado(Empleado emp)
+        public bool AddEmpleado(Empleado emp)
         {
             try
             {
@@ -70,7 +70,7 @@ namespace DAL
                     command.Parameters.AddRange(new SqlParameter[]{Nombreparam,Pri_apellidoparam, Seg_apellidoparam, Cedulaparam, Fecha_inicioparam, Salario_por_horaparam, Fecha_nacimientoparam, Codigo_sucursalparam});
                     command.ExecuteNonQuery();
                     command.Connection.Close();
-                    
+                    return true;
                 }
             }
             catch (Exception ex)
@@ -83,7 +83,7 @@ namespace DAL
         /// Database UPDATE - Update an Employee
         /// </summary>
         /// <param name="emp"></param>
-        public void UpdateEmpleado(Empleado emp)
+        public bool UpdateEmpleado(Empleado emp)
         {
             try
             {
@@ -109,7 +109,25 @@ namespace DAL
 
                     command.Parameters.AddRange(new SqlParameter[]{Nombreparam,Pri_apellidoparam, Seg_apellidoparam, Cedulaparam, Fecha_inicioparam, Salario_por_horaparam, Fecha_nacimientoparam, Codigo_sucursalparam});
                     command.ExecuteNonQuery();
+                    #region  Revision de que se hizo bien
+                    string buscarEmpleado = "SELECT * FROM Empleado WHERE Cedula=@cedula";
+                    string usuarioencontrado = "";
+                    command.CommandText = buscarEmpleado;
+                    SqlDataReader reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        usuarioencontrado = reader[0].ToString();
+                    }
                     command.Connection.Close();
+                    if (usuarioencontrado != "")
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                    #endregion
                 }
             }
             catch (Exception ex)
@@ -122,18 +140,16 @@ namespace DAL
        /// Database DELETE - Delete an Employee
        /// </summary>
        /// <param name="iD"></param>
-        public void DeleteEmpleado(int cedula)
+        public bool DeleteEmpleado(int cedula)
         {
             try
             {
                 using (conn)
                 {
-                    #region borrar de horas
 
-                    #endregion
+                    
                     string sqlDeletefromHoras = "DELETE FROM Horas WHERE Ced_empleado=@cedula ";
-                    string sqlDeleteString =
-                    "DELETE FROM Empleado WHERE Cedula=@cedula ";
+                    string sqlDeleteString = "DELETE FROM Empleado WHERE Cedula=@cedula ";
 
                     conn = new SqlConnection(connString);
 
@@ -143,11 +159,50 @@ namespace DAL
 
                     SqlParameter cedulaparam = new SqlParameter("@cedula", cedula);
                     command.Parameters.Add(cedulaparam);
-                    command.CommandText = sqlDeleteString;
+                    #region Borrando de rol
+                    string String1 = "SELECT Nombre, Descripcion FROM Rol WHERE Cedula_empleado=@cedula";
+                    string sqlDeletefromRol = "DELETE FROM Rol WHERE Cedula_empleado=@cedula";
+                    string String2 = "";
+                    Int32 count = 0;
+                    command.CommandText = String1;
+                    string rolparacontar = "";
+                    string descripcionrol = "";
+                    SqlDataReader reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        rolparacontar = reader[0].ToString();
+                        descripcionrol = reader[1].ToString();
+                    }
+                    if (rolparacontar != "")
+                    {
+                        String2 = "SELECT COUNT(Cedula_empleado) FROM Rol WHERE Nombre=" + rolparacontar;
+                        command.CommandText = String2;
+                        count = (Int32)command.ExecuteScalar();
+                    }
+                    command.CommandText = sqlDeletefromRol;
                     command.ExecuteNonQuery();
+                    if (count == 1)
+                    {
+                        command.CommandText = "INSERT INTO Rol (Nombre, Descripcion) VALUES (" + rolparacontar + ", " + descripcionrol + " )";
+                        command.ExecuteNonQuery();
+                    }
+                    #endregion
+                    #region Borrando de sucursal
+                    string borradodeadmin = "UPDATE Sucursal SET Ced_administrador=0 WHERE Ced_administrador=@cedula";
+                    command.CommandText = borradodeadmin;
+                    command.ExecuteNonQuery();
+                    #endregion
+                    #region Borrando de venta
+                    string borradodecajero = "UPDATE Venta SET Cedula_cajero=0 WHERE Cedula_cajero=@cedula";
+                    command.CommandText = borradodecajero;
+                    command.ExecuteNonQuery();
+                    #endregion
                     command.CommandText = sqlDeletefromHoras;
                     command.ExecuteNonQuery();
+                    command.CommandText = sqlDeleteString;
+                    command.ExecuteNonQuery();
                     command.Connection.Close();
+                    return true;
                 }
             }
             catch (Exception ex)
@@ -237,7 +292,7 @@ namespace DAL
         /// Database INSERT - Add a Sucursal
         /// </summary>
         /// <param name="suc"></param>
-        public void AddSucursal(Sucursal suc)
+        public bool AddSucursal(Sucursal suc)
         {
             try
             {
@@ -263,6 +318,7 @@ namespace DAL
                     command.Parameters.AddRange(new SqlParameter[] { Codigoparam, Nombreparam, Telefonoparam, Direccionparam, Ced_administradorparam});
                     command.ExecuteNonQuery();
                     command.Connection.Close();
+                    return true;
 
                 }
             }
@@ -276,7 +332,7 @@ namespace DAL
         /// Database UPDATE - Update a Sucursal
         /// </summary>
         /// <param name="suc"></param>
-        public void UpdateSucursal(Sucursal suc)
+        public bool UpdateSucursal(Sucursal suc)
         {
             try
             {
@@ -299,7 +355,25 @@ namespace DAL
                     
                     command.Parameters.AddRange(new SqlParameter[] { Codigoparam, Nombreparam, Telefonoparam, Direccionparam, Ced_administradorparam});
                     command.ExecuteNonQuery();
+                    #region  Revision de que se hizo bien
+                    string buscarSucursal = "SELECT * FROM Sucursal WHERE Codigo=@codigo";
+                    string sucursalencontrada = "";
+                    command.CommandText = buscarSucursal;
+                    SqlDataReader reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        sucursalencontrada = reader[0].ToString();
+                    }
                     command.Connection.Close();
+                    if (sucursalencontrada != "")
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                    #endregion
                 }
             }
             catch (Exception ex)
@@ -312,7 +386,7 @@ namespace DAL
         /// Database DELETE - Delete a Sucursal
         /// </summary>
         /// <param name="codigo"></param>
-        public void DeleteSucursal(string codigo)
+        public bool DeleteSucursal(string codigo)
         {
             try
             {
@@ -326,12 +400,46 @@ namespace DAL
                     command = new SqlCommand();
                     command.Connection = conn;
                     command.Connection.Open();
-                    command.CommandText = sqlDeleteString;
+                    
 
                     SqlParameter codigoparam = new SqlParameter("@codigo", codigo);
                     command.Parameters.Add(codigoparam);
+
+                    #region Borrado de empleados
+                    string buscarempleados = "SELECT * FROM Empleado WHERE Codigo_sucursal=@codigo";
+                    command.CommandText = buscarempleados;
+                    SqlDataReader reader = command.ExecuteReader();
+                    List<int> listacedulas = new List<int>();
+                    while (reader.Read())
+                    {
+                        string cedulanueva_temp = reader[3].ToString();
+                        int cedulanueva = int.Parse(cedulanueva_temp);
+                        listacedulas.Add(cedulanueva);
+                    }
+                    foreach (int cedulabuscar in listacedulas)
+                    {
+                        DeleteEmpleado(cedulabuscar);
+                    }
+
+                    #endregion
+                    #region Borrando de compra
+                    string borradodesucursal = "UPDATE Compra SET Codigo_sucursal=0 WHERE Codigo_sucursal=@codigo";
+                    command.CommandText = borradodesucursal;
+                    command.ExecuteNonQuery();
+                    #endregion
+
+                    #region Borrado de productos
+                    /////////////////////Esto falta porque necesito implementar borrado en el lado de productos
+                    #endregion
+                    #region Borrando de venta
+                    string borradodesucursalventa = "UPDATE Venta SET Codigo_sucursal=0 WHERE Codigo_sucursal=@codigo";
+                    command.CommandText = borradodesucursalventa;
+                    command.ExecuteNonQuery();
+                    #endregion
+                    command.CommandText = sqlDeleteString;
                     command.ExecuteNonQuery();
                     command.Connection.Close();
+                    return true;
                 }
             }
             catch (Exception ex)
@@ -426,7 +534,7 @@ namespace DAL
         /// Database INSERT - Add a Categoria
         /// </summary>
         /// <param name="cat"></param>
-        public void AddCategoria(Categoria cat)
+        public bool AddCategoria(Categoria cat)
         {
             try
             {
@@ -450,6 +558,7 @@ namespace DAL
                     command.Parameters.AddRange(new SqlParameter[] { IDparam, Descripcionparam, Codigo_productoparam});
                     command.ExecuteNonQuery();
                     command.Connection.Close();
+                    return true;
 
                 }
             }
