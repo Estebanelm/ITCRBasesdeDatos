@@ -22,8 +22,15 @@ namespace L3MDB
 
         public Compra(HttpContext context)
         {
-            string _Codigo_temp = context.Request["Codigo"];
-            _Codigo = int.Parse(_Codigo_temp);
+            if (context.Request["Codigo"] == null)
+            {
+                _Codigo = 0;
+            }
+            else
+            {
+                string _codigo_temp = context.Request["Codigo"];
+                _Codigo = int.Parse(_codigo_temp);
+            }
             string _Cedula_proveedor_temp = context.Request["Cedula_proveedor"];
             _Cedula_proveedor = int.Parse(_Cedula_proveedor_temp);
             _Descripcion = context.Request["Descripcion"];

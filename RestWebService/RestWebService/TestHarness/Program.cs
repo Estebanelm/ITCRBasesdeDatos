@@ -27,7 +27,14 @@ namespace TestHarness
 
             #region "Test database Functionalities"
 
-            TestSelectCommand(suc, dal);
+            //dal.DeleteEmpleado(1110);
+            //dal.GetSucursal("SJ45");
+            Categoria newcat = new Categoria();
+            newcat.ID = 0;
+            newcat.Codigo_producto = 123456;
+            newcat.Descripcion = "Comida para perro";
+            dal.AddCategoria(newcat);
+            //TestSelectCommand(suc, dal);
             //TestInsertCommand(emp, dal);
             //TestUpdateCommand(emp, dal);
             //TestDeleteCommand(emp, dal);

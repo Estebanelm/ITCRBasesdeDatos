@@ -221,10 +221,12 @@ namespace RestWebService
                     else
                     {
                         string _horas = _horastemp;
+                        string _cedulatemp = context.Request["ced_empleado"];
+                        int _cedula = int.Parse(_cedulatemp);
 
                         //HTTP Request Type - GET"
                         //Performing Operation - READ"
-                        hor = dal.GetHoras(_horas);
+                        hor = dal.GetHoras(_horas, _cedula);
                         if (com == null)
                             context.Response.Write(_horas + "No Horas Found" + _horastemp);
 
@@ -248,11 +250,12 @@ namespace RestWebService
                     }
                     else
                     {
+                        string _codigo_sucursaltemp = context.Request["codigo_sucursal"];
                         int _codigo_barras = int.Parse(_codigo_barrastemp);
 
                         //HTTP Request Type - GET"
                         //Performing Operation - READ"
-                        produ = dal.GetProducto(_codigo_barras);
+                        produ = dal.GetProducto(_codigo_barras, _codigo_sucursaltemp);
                         if (produ == null)
                             context.Response.Write(_codigo_barras + "No Producto Found" + _codigo_barrastemp);
 
@@ -266,6 +269,7 @@ namespace RestWebService
                 else if (request_instance == "productos_en_compra")
                 {
                     string _codigo_compratemp = context.Request["codigo_compra"];
+                    string _codigo_productotemp = context.Request["codigo_producto"];
                     if (_codigo_compratemp == null)
                     {
                         List<L3MDB.Productos_en_compra> lista_productos_en_compra = dal.GetProductos_en_compras();
@@ -277,10 +281,11 @@ namespace RestWebService
                     else
                     {
                         int _codigo_compra = int.Parse(_codigo_compratemp);
+                        int _codigo_producto = int.Parse(_codigo_productotemp);
 
                         //HTTP Request Type - GET"
                         //Performing Operation - READ"
-                        producom = dal.GetProducto_en_compra(_codigo_compra);
+                        producom = dal.GetProducto_en_compra(_codigo_compra, _codigo_producto);
                         if (producom == null)
                             context.Response.Write(_codigo_compra + "No Producto Found" + _codigo_compratemp);
 
@@ -294,6 +299,7 @@ namespace RestWebService
                 else if (request_instance == "productos_en_venta")
                 {
                     string _codigo_ventatemp = context.Request["codigo_venta"];
+                    string _codigo_productotemp = context.Request["codigo_producto"];
                     if (_codigo_ventatemp == null)
                     {
                         List<L3MDB.Productos_en_venta> lista_productos_en_venta = dal.GetProductos_en_ventas();
@@ -305,10 +311,11 @@ namespace RestWebService
                     else
                     {
                         int _codigo_venta = int.Parse(_codigo_ventatemp);
+                        int _codigo_producto = int.Parse(_codigo_productotemp);
 
                         //HTTP Request Type - GET"
                         //Performing Operation - READ"
-                        produven = dal.GetProducto_en_venta(_codigo_venta);
+                        produven = dal.GetProducto_en_venta(_codigo_venta, _codigo_producto);
                         if (produven == null)
                             context.Response.Write(_codigo_venta + "No Producto Found" + _codigo_ventatemp);
 
@@ -729,9 +736,10 @@ namespace RestWebService
                 #region Horas
                 if (request_instance == "horas")
                 {
-                    string _id_semana_temp = context.Request["id_semana"];
-                    int _id_semana = int.Parse(_id_semana_temp);
-                    dal.DeleteHoras(_id_semana.ToString());
+                    string _id_semana = context.Request["id_semana"];
+                    string _cedempleado_temp = context.Request["ced_empleado"];
+                    int _cedempleado = int.Parse(_cedempleado_temp);
+                    dal.DeleteHoras(_id_semana, _cedempleado);
                     WriteResponse("ok");
                 }
                 #endregion
@@ -740,7 +748,8 @@ namespace RestWebService
                 {
                     string _codigo_barras_temp = context.Request["codigo_barras"];
                     int _codigo_barras = int.Parse(_codigo_barras_temp);
-                    dal.DeleteProducto(_codigo_barras);
+                    string _codigo_sucursal = context.Request["codigo_sucursal"];
+                    dal.DeleteProducto(_codigo_barras, _codigo_sucursal);
                     WriteResponse("ok");
                 }
                 #endregion
@@ -748,8 +757,10 @@ namespace RestWebService
                 if (request_instance == "productos_en_compra")
                 {
                     string _codigo_compra_temp = context.Request["codigo_compra"];
+                    string _codigo_productotemp = context.Request["codigo_producto"];
                     int _codigo_compra = int.Parse(_codigo_compra_temp);
-                    dal.DeleteProductocompra(_codigo_compra);
+                    int _codigo_producto = int.Parse(_codigo_productotemp);
+                    dal.DeleteProductocompra(_codigo_compra, _codigo_producto);
                     WriteResponse("ok");
                 }
                 #endregion
@@ -757,8 +768,10 @@ namespace RestWebService
                 if (request_instance == "productos_en_venta")
                 {
                     string _codigo_venta_temp = context.Request["codigo_venta"];
+                    string _codigo_productotemp = context.Request["codigo_producto"];
                     int _codigo_venta = int.Parse(_codigo_venta_temp);
-                    dal.DeleteVenta(_codigo_venta);
+                    int _codigo_producto = int.Parse(_codigo_productotemp);
+                    dal.DeleteProductoventa(_codigo_venta, _codigo_producto);
                     WriteResponse("ok");
                 }
                 #endregion

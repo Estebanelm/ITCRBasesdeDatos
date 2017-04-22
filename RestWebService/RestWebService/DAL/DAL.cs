@@ -148,7 +148,7 @@ namespace DAL
                 {
 
                     
-                    string sqlDeletefromHoras = "DELETE FROM Horas WHERE Ced_empleado=@cedula ";
+                    
                     string sqlDeleteString = "DELETE FROM Empleado WHERE Cedula=@cedula ";
 
                     conn = new SqlConnection(connString);
@@ -160,44 +160,59 @@ namespace DAL
                     SqlParameter cedulaparam = new SqlParameter("@cedula", cedula);
                     command.Parameters.Add(cedulaparam);
                     #region Borrando de rol
-                    string String1 = "SELECT Nombre, Descripcion FROM Rol WHERE Cedula_empleado=@cedula";
-                    string sqlDeletefromRol = "DELETE FROM Rol WHERE Cedula_empleado=@cedula";
+                    string String1 = "SELECT Nombre, Descripcion FROM Rol WHERE Ced_empleado=@cedula";
+                    string sqlDeletefromRol = "DELETE FROM Rol WHERE Ced_empleado=@cedula";
                     string String2 = "";
                     Int32 count = 0;
                     command.CommandText = String1;
                     string rolparacontar = "";
                     string descripcionrol = "";
+                    List<string> listarolesydesc = new List<string>();
+                    List<Int32> listacuentas = new List<Int32>();
                     SqlDataReader reader = command.ExecuteReader();
                     while (reader.Read())
                     {
                         rolparacontar = reader[0].ToString();
                         descripcionrol = reader[1].ToString();
+                        listarolesydesc.Add(rolparacontar);
+                        listarolesydesc.Add(descripcionrol);
                     }
-                    if (rolparacontar != "")
+                    reader.Close();
+                    if (listarolesydesc.Count != 0)
                     {
-                        String2 = "SELECT COUNT(Cedula_empleado) FROM Rol WHERE Nombre=" + rolparacontar;
-                        command.CommandText = String2;
-                        count = (Int32)command.ExecuteScalar();
+                        for (int i = 0; i < listarolesydesc.Count; i = i + 2)
+                        {
+                            String2 = "SELECT COUNT(Ced_empleado) FROM Rol WHERE Nombre=" + "'" + listarolesydesc[i] + "'";
+                            command.CommandText = String2;
+                            count = (Int32)command.ExecuteScalar();
+                            listacuentas.Add(count);
+                        }
                     }
                     command.CommandText = sqlDeletefromRol;
                     command.ExecuteNonQuery();
-                    if (count == 1)
+                    for (int i = 0; i < listarolesydesc.Count; i = i + 2)
                     {
-                        command.CommandText = "INSERT INTO Rol (Nombre, Descripcion) VALUES (" + rolparacontar + ", " + descripcionrol + " )";
-                        command.ExecuteNonQuery();
+                        if (listacuentas[i/2] == 1)
+                        {
+                            command.CommandText = "INSERT INTO Rol (Nombre, Descripcion) VALUES ( '" + listarolesydesc[i] + "' , '" + listarolesydesc[i+1] + "' )";
+                            command.ExecuteNonQuery();
+                        }
                     }
                     #endregion
                     #region Borrando de sucursal
-                    string borradodeadmin = "UPDATE Sucursal SET Ced_administrador=0 WHERE Ced_administrador=@cedula";
+                    string borradodeadmin = "UPDATE Sucursal SET Ced_administrador=NULL WHERE Ced_administrador=@cedula";
                     command.CommandText = borradodeadmin;
                     command.ExecuteNonQuery();
                     #endregion
                     #region Borrando de venta
-                    string borradodecajero = "UPDATE Venta SET Cedula_cajero=0 WHERE Cedula_cajero=@cedula";
+                    string borradodecajero = "UPDATE Venta SET Cedula_cajero=NULL WHERE Cedula_cajero=@cedula";
                     command.CommandText = borradodecajero;
                     command.ExecuteNonQuery();
                     #endregion
+                    #region Borrando de horas
+                    string sqlDeletefromHoras = "DELETE FROM Horas WHERE Ced_empleado=@cedula ";
                     command.CommandText = sqlDeletefromHoras;
+                    #endregion
                     command.ExecuteNonQuery();
                     command.CommandText = sqlDeleteString;
                     command.ExecuteNonQuery();
@@ -299,22 +314,29 @@ namespace DAL
                 using (conn)
                 {
                     //using parametirized query
-                    string sqlInserString =
-                    "INSERT INTO Sucursal (Codigo, Nombre, Telefono, Direccion, Ced_administrador) VALUES (@codigo, @nombre, @telefono, @direccion, @ced_adminitrador)";
 
+                    string sqlInserString = "";
                     conn = new SqlConnection(connString);
 
                     command = new SqlCommand();
                     command.Connection = conn;
                     command.Connection.Open();
-                    command.CommandText = sqlInserString;
+                    
 
                     SqlParameter Codigoparam = new SqlParameter("@codigo", suc.Codigo);
                     SqlParameter Nombreparam = new SqlParameter("@nombre", suc.Nombre);
                     SqlParameter Telefonoparam = new SqlParameter("@telefono", suc.Telefono.ToString());
                     SqlParameter Direccionparam = new SqlParameter("@direccion", suc.Direccion);
                     SqlParameter Ced_administradorparam = new SqlParameter("@ced_administrador", suc.Ced_administrador.ToString());
-                   
+                    if (suc.Ced_administrador == 0)
+                    {
+                        sqlInserString = "INSERT INTO Sucursal (Codigo, Nombre, Telefono, Direccion, Ced_administrador) VALUES (@codigo, @nombre, @telefono, @direccion, NULL)";
+                    }
+                    else
+                    {
+                        sqlInserString = "INSERT INTO Sucursal (Codigo, Nombre, Telefono, Direccion, Ced_administrador) VALUES (@codigo, @nombre, @telefono, @direccion, @ced_administrador)";
+                    }
+                    command.CommandText = sqlInserString;
                     command.Parameters.AddRange(new SqlParameter[] { Codigoparam, Nombreparam, Telefonoparam, Direccionparam, Ced_administradorparam});
                     command.ExecuteNonQuery();
                     command.Connection.Close();
@@ -338,21 +360,30 @@ namespace DAL
             {
                 using (conn)
                 {
-                    string sqlUpdateString =
-                    "UPDATE Sucursal SET Nombre=@nombre, Telefono=@telefono, Direccion=@direccion, Ced_administrador=@ced_administrador WHERE Codigo=@codigo";
+                    string sqlUpdateString = "";
                     conn = new SqlConnection(connString);
 
                     command = new SqlCommand();
                     command.Connection = conn;
                     command.Connection.Open();
-                    command.CommandText = sqlUpdateString;
 
                     SqlParameter Codigoparam = new SqlParameter("@codigo", suc.Codigo);
                     SqlParameter Nombreparam = new SqlParameter("@nombre", suc.Nombre);
                     SqlParameter Telefonoparam = new SqlParameter("@telefono", suc.Telefono.ToString());
                     SqlParameter Direccionparam = new SqlParameter("@direccion", suc.Direccion);
                     SqlParameter Ced_administradorparam= new SqlParameter("@ced_administrador", suc.Ced_administrador.ToString());
-                    
+                    if (suc.Ced_administrador == 0)
+                    {
+                        sqlUpdateString =
+                            "UPDATE Sucursal SET Nombre=@nombre, Telefono=@telefono, Direccion=@direccion, Ced_administrador=NULL WHERE Codigo=@codigo";
+                    }
+                    else
+                    {
+                        sqlUpdateString =
+                    "UPDATE Sucursal SET Nombre=@nombre, Telefono=@telefono, Direccion=@direccion, Ced_administrador=@ced_administrador WHERE Codigo=@codigo";
+                    }
+                    command.CommandText = sqlUpdateString;
+
                     command.Parameters.AddRange(new SqlParameter[] { Codigoparam, Nombreparam, Telefonoparam, Direccionparam, Ced_administradorparam});
                     command.ExecuteNonQuery();
                     #region  Revision de que se hizo bien
@@ -408,14 +439,15 @@ namespace DAL
                     #region Borrado de empleados
                     string buscarempleados = "SELECT * FROM Empleado WHERE Codigo_sucursal=@codigo";
                     command.CommandText = buscarempleados;
-                    SqlDataReader reader = command.ExecuteReader();
                     List<int> listacedulas = new List<int>();
+                    SqlDataReader reader = command.ExecuteReader();
                     while (reader.Read())
                     {
                         string cedulanueva_temp = reader[3].ToString();
                         int cedulanueva = int.Parse(cedulanueva_temp);
                         listacedulas.Add(cedulanueva);
                     }
+                    reader.Close();
                     foreach (int cedulabuscar in listacedulas)
                     {
                         DeleteEmpleado(cedulabuscar);
@@ -427,9 +459,8 @@ namespace DAL
                     command.CommandText = borradodesucursal;
                     command.ExecuteNonQuery();
                     #endregion
-
                     #region Borrado de productos
-                    /////////////////////Esto falta porque necesito implementar borrado en el lado de productos
+                    BorrarProductosSucursal(codigo, command);
                     #endregion
                     #region Borrando de venta
                     string borradodesucursalventa = "UPDATE Venta SET Codigo_sucursal=0 WHERE Codigo_sucursal=@codigo";
@@ -447,6 +478,35 @@ namespace DAL
                 err.ErrorMessage = ex.Message.ToString();
                 throw;
             }
+        }
+        public void BorrarProductosSucursal(string codigo, SqlCommand command)
+        {
+            string sqlbuscarProductos = "SELECT * FROM Producto WHERE Codigo_sucursal=@codigo";
+            command.CommandText = sqlbuscarProductos;
+            List<int> listaCodigoBarras = new List<int>();
+            SqlDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                string codigobarrastemp = reader[1].ToString();
+                int codigobarras = int.Parse(codigobarrastemp);
+                listaCodigoBarras.Add(codigobarras);
+            }
+            reader.Close();
+            if (listaCodigoBarras.Count != 0)
+            {
+                foreach (int codigoBarrasBorrar in listaCodigoBarras)
+                {
+                    string sqlborrarProductosCompra = "UPDATE Productos_en_compra SET Codigo_producto=NULL WHERE Codigo_producto='" + listaCodigoBarras.ToString() + "'";
+                    command.CommandText = sqlborrarProductosCompra;
+                    command.ExecuteNonQuery();
+                    string sqlborrarProductosVenta = "UPDATE Productos_en_venta SET Codigo_producto=NULL WHERE Codigo_producto='" + listaCodigoBarras.ToString() + "'";
+                    command.CommandText = sqlborrarProductosVenta;
+                    command.ExecuteNonQuery();
+                }
+            }
+            string sqlborradoProductos = "DELETE FROM Producto WHERE Codigo_sucursal=@codigo";
+            command.CommandText = sqlborradoProductos;
+            command.ExecuteNonQuery();
         }
         /// <summary>
         /// Database SELECT - Get a sucursal
@@ -542,8 +602,7 @@ namespace DAL
                 {
                     //using parametirized query
                     string sqlInserString =
-                    "INSERT INTO Categoria (ID, Descripcion, Codigo_producto) VALUES (@id, @descripcion, @codigo_producto)";
-
+                    "INSERT INTO Categoria (Descripcion, Codigo_producto) VALUES (@descripcion, @codigo_producto)";
                     conn = new SqlConnection(connString);
 
                     command = new SqlCommand();
@@ -551,11 +610,10 @@ namespace DAL
                     command.Connection.Open();
                     command.CommandText = sqlInserString;
 
-                    SqlParameter IDparam = new SqlParameter("@id", cat.ID.ToString());
                     SqlParameter Descripcionparam = new SqlParameter("@descripcion", cat.Descripcion);
                     SqlParameter Codigo_productoparam = new SqlParameter("@codigo_producto", cat.Codigo_producto.ToString());
                     
-                    command.Parameters.AddRange(new SqlParameter[] { IDparam, Descripcionparam, Codigo_productoparam});
+                    command.Parameters.AddRange(new SqlParameter[] { Descripcionparam, Codigo_productoparam});
                     command.ExecuteNonQuery();
                     command.Connection.Close();
                     return true;
@@ -572,7 +630,7 @@ namespace DAL
         /// Database UPDATE - Update a Categoria
         /// </summary>
         /// <param name="cat"></param>
-        public void UpdateCategoria(Categoria cat)
+        public bool UpdateCategoria(Categoria cat)
         {
             try
             {
@@ -593,7 +651,26 @@ namespace DAL
 
                     command.Parameters.AddRange(new SqlParameter[] { IDparam, Descripcionparam, Codigo_productoparam });
                     command.ExecuteNonQuery();
+
+                    #region  Revision de que se hizo bien
+                    string buscarCategoria = "SELECT * FROM Categoria WHERE ID=@id";
+                    string categoriaencontrada = "";
+                    command.CommandText = buscarCategoria;
+                    SqlDataReader reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        categoriaencontrada = reader[0].ToString();
+                    }
                     command.Connection.Close();
+                    if (categoriaencontrada != "")
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                    #endregion
                 }
             }
             catch (Exception ex)
@@ -606,7 +683,7 @@ namespace DAL
         /// Database DELETE - Delete a Categoria
         /// </summary>
         /// <param name="iD"></param>
-        public void DeleteCategoria(int iD)
+        public bool DeleteCategoria(int iD)
         {
             try
             {
@@ -626,6 +703,7 @@ namespace DAL
                     command.Parameters.Add(IDparam);
                     command.ExecuteNonQuery();
                     command.Connection.Close();
+                    return true;
                 }
             }
             catch (Exception ex)
@@ -717,7 +795,7 @@ namespace DAL
         /// Database INSERT - Add a Compra
         /// </summary>
         /// <param name="com"></param>
-        public void AddCompra(Compra com)
+        public bool AddCompra(Compra com)
         {
             try
             {
@@ -725,7 +803,7 @@ namespace DAL
                 {
                     //using parametirized query
                     string sqlInserString =
-                    "INSERT INTO Compra (Codigo, Cedula_proveedor, Descripcion, Foto, Fecha_registro, Fecha_real, Codigo_sucursal) VALUES (@codigo, @cedula_proveedor, @descripcion, @foto, @fecha_registro, @fecha_real, @codigo_sucursal)";
+                    "INSERT INTO Compra (Cedula_proveedor, Descripcion, Foto, Fecha_registro, Fecha_real, Codigo_sucursal) VALUES (@cedula_proveedor, @descripcion, @foto, @fecha_registro, @fecha_real, @codigo_sucursal)";
 
                     conn = new SqlConnection(connString);
 
@@ -734,7 +812,6 @@ namespace DAL
                     command.Connection.Open();
                     command.CommandText = sqlInserString;
 
-                    SqlParameter Codigoparam = new SqlParameter("@codigo", com.Codigo.ToString());
                     SqlParameter Cedula_proveedorparam = new SqlParameter("@cedula_proveedor", com.Cedula_proveedor.ToString());
                     SqlParameter Descripcionparam = new SqlParameter("@descripcion", com.Descripcion);
                     SqlParameter Fotoparam = new SqlParameter("@foto", com.Foto);
@@ -742,10 +819,10 @@ namespace DAL
                     SqlParameter Fecha_realparam = new SqlParameter("@fecha_real", com.Fecha_real);
                     SqlParameter Codigo_sucursalparam = new SqlParameter("@codigo_sucursal", com.Codigo_sucursal);
                     
-                    command.Parameters.AddRange(new SqlParameter[] { Codigoparam, Cedula_proveedorparam, Descripcionparam, Fotoparam, Fecha_registroparam, Fecha_realparam, Codigo_sucursalparam });
+                    command.Parameters.AddRange(new SqlParameter[] { Cedula_proveedorparam, Descripcionparam, Fotoparam, Fecha_registroparam, Fecha_realparam, Codigo_sucursalparam });
                     command.ExecuteNonQuery();
                     command.Connection.Close();
-
+                    return true;
                 }
             }
             catch (Exception ex)
@@ -758,7 +835,7 @@ namespace DAL
         /// Database UPDATE - Update a Compra
         /// </summary>
         /// <param name="com"></param>
-        public void UpdateCompra(Compra com)
+        public bool UpdateCompra(Compra com)
         {
             try
             {
@@ -783,7 +860,25 @@ namespace DAL
 
                     command.Parameters.AddRange(new SqlParameter[] { Codigoparam, Cedula_proveedorparam, Descripcionparam, Fotoparam, Fecha_registroparam, Fecha_realparam, Codigo_sucursalparam });
                     command.ExecuteNonQuery();
+                    #region  Revision de que se hizo bien
+                    string buscarCompra = "SELECT * FROM Compra WHERE Codigo=@codigo";
+                    string compraEncontrada = "";
+                    command.CommandText = buscarCompra;
+                    SqlDataReader reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        compraEncontrada = reader[0].ToString();
+                    }
                     command.Connection.Close();
+                    if (compraEncontrada != "")
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                    #endregion
                 }
             }
             catch (Exception ex)
@@ -796,26 +891,48 @@ namespace DAL
         /// Database DELETE - Delete a Compra
         /// </summary>
         /// <param name="codigo"></param>
-        public void DeleteCompra(int codigo)
+        public bool DeleteCompra(int codigo)
         {
             try
             {
                 using (conn)
                 {
                     string sqlDeleteString =
-                    "DELETE FROM Compra WHERE Codigo=@codigo ";
+                     "UPDATE Compra SET Activo=0 WHERE Codigo=@codigo";
 
                     conn = new SqlConnection(connString);
 
                     command = new SqlCommand();
                     command.Connection = conn;
                     command.Connection.Open();
-                    command.CommandText = sqlDeleteString;
+                    
 
                     SqlParameter Codigoparam = new SqlParameter("@codigo", codigo);
                     command.Parameters.Add(Codigoparam);
+
+
+                    command.CommandText = sqlDeleteString;
                     command.ExecuteNonQuery();
+
+                    #region  Revision de que se hizo bien
+                    string buscarCompra = "SELECT Activo FROM Compra WHERE Codigo=@codigo";
+                    string compraEncontrada = "";
+                    command.CommandText = buscarCompra;
+                    SqlDataReader reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        compraEncontrada = reader[0].ToString();
+                    }
                     command.Connection.Close();
+                    if (compraEncontrada != "")
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                    #endregion
                 }
             }
             catch (Exception ex)
@@ -868,7 +985,7 @@ namespace DAL
 
                     conn = new SqlConnection(connString);
 
-                    string sqlSelectString = "SELECT * FROM Compra";
+                    string sqlSelectString = "SELECT * FROM Compra WHERE Activo=1";
                     command = new SqlCommand(sqlSelectString, conn);
                     command.Connection.Open();
 
@@ -899,12 +1016,214 @@ namespace DAL
             }
         }
         #endregion
+        #region Operaciones sobre ventas
+        /// <summary>
+        /// Database INSERT - Add a Venta
+        /// </summary>
+        /// <param name="ven"></param>
+        public bool AddVenta(Venta ven)
+        {
+            try
+            {
+                using (conn)
+                {
+                    //using parametirized query
+                    string sqlInserString =
+                    "INSERT INTO Venta (Descuento, Precio_total, Codigo_sucursal, Cedula_cajero) VALUES (@descuento, @precio_total, @codigo_sucursal, @cedula_cajero)";
+
+                    conn = new SqlConnection(connString);
+
+                    command = new SqlCommand();
+                    command.Connection = conn;
+                    command.Connection.Open();
+                    command.CommandText = sqlInserString;
+
+                    SqlParameter Descuentoparam = new SqlParameter("@descuento", ven.Descuento.ToString());
+                    SqlParameter Precio_totalparam = new SqlParameter("@precio_total", ven.Precio_total.ToString());
+                    SqlParameter Codigo_sucursalparam = new SqlParameter("@codigo_sucursal", ven.Codigo_sucursal);
+                    SqlParameter Cedula_cajeroparam = new SqlParameter("@cedula_cajero", ven.Cedula_cajero.ToString());
+
+                    command.Parameters.AddRange(new SqlParameter[] { Descuentoparam, Precio_totalparam, Codigo_sucursalparam, Cedula_cajeroparam });
+                    command.ExecuteNonQuery();
+                    command.Connection.Close();
+                    return true;
+
+                }
+            }
+            catch (Exception ex)
+            {
+                err.ErrorMessage = ex.Message.ToString();
+                throw;
+            }
+        }
+        /// <summary>
+        /// Database UPDATE - Update a Venta
+        /// </summary>
+        /// <param name="ven"></param>
+        public bool UpdateVenta(Venta ven)
+        {
+            try
+            {
+                using (conn)
+                {
+                    string sqlUpdateString =
+                    "UPDATE Venta SET Descuento=@descuento, Precio_total=@precio_total, Codigo_sucursal=@codigo_sucursal, Cedula_cajero=@cedula_cajero WHERE Codigo=@codigo ";
+                    conn = new SqlConnection(connString);
+
+                    command = new SqlCommand();
+                    command.Connection = conn;
+                    command.Connection.Open();
+                    command.CommandText = sqlUpdateString;
+
+                    SqlParameter Codigoparam = new SqlParameter("@codigo", ven.Codigo.ToString());
+                    SqlParameter Descuentoparam = new SqlParameter("@descuento", ven.Descuento.ToString());
+                    SqlParameter Precio_totalparam = new SqlParameter("@precio_total", ven.Precio_total.ToString());
+                    SqlParameter Codigo_sucursalparam = new SqlParameter("@codigo_sucursal", ven.Codigo_sucursal);
+                    SqlParameter Cedula_cajeroparam = new SqlParameter("@cedula_cajero", ven.Cedula_cajero.ToString());
+
+                    command.Parameters.AddRange(new SqlParameter[] { Codigoparam, Descuentoparam, Precio_totalparam, Codigo_sucursalparam, Cedula_cajeroparam });
+                    command.ExecuteNonQuery();
+                    #region  Revision de que se hizo bien
+                    string buscarVenta = "SELECT * FROM Venta WHERE Codigo=@codigo";
+                    string ventaEncontrada = "";
+                    command.CommandText = buscarVenta;
+                    SqlDataReader reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        ventaEncontrada = reader[0].ToString();
+                    }
+                    command.Connection.Close();
+                    if (ventaEncontrada != "")
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                    #endregion
+                }
+            }
+            catch (Exception ex)
+            {
+                err.ErrorMessage = ex.Message.ToString();
+                throw;
+            }
+        }
+        /// <summary>
+        /// Database DELETE - Delete a Venta
+        /// </summary>
+        /// <param name="codigo"></param>
+        public bool DeleteVenta(int codigo)
+        {
+            try
+            {
+                using (conn)
+                {
+                    string sqlDeleteString =
+                     "UPDATE Venta SET Activo=0 WHERE Codigo=@codigo";
+
+                    conn = new SqlConnection(connString);
+
+                    command = new SqlCommand();
+                    command.Connection = conn;
+                    command.Connection.Open();
+                    command.CommandText = sqlDeleteString;
+
+                    SqlParameter codigoparam = new SqlParameter("@codigo", codigo);
+                    command.Parameters.Add(codigoparam);
+                    command.ExecuteNonQuery();
+                    command.Connection.Close();
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                err.ErrorMessage = ex.Message.ToString();
+                throw;
+            }
+        }
+        /// <summary>
+        /// Database SELECT - Get an employee
+        /// </summary>
+        /// <param name="codigo"></param>
+        /// <returns></returns>
+        public Venta GetVenta(int codigo)
+        {
+            try
+            {
+                if (venList == null)
+                {
+                    venList = GetVentas();
+                }
+                // enumerate through all employee list
+                // and select the concerned employee
+                foreach (Venta ven in venList)
+                {
+                    if (ven.Codigo == codigo)
+                    {
+                        return ven;
+                    }
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                err.ErrorMessage = ex.Message.ToString();
+                throw;
+            }
+        }
+        /// <summary>
+        /// Method - Get list of all Ventas
+        /// </summary>
+        /// <returns>Venta</returns>
+        public List<Venta> GetVentas()
+        {
+            try
+            {
+                using (conn)
+                {
+                    venList = new List<Venta>();
+
+                    conn = new SqlConnection(connString);
+
+                    string sqlSelectString = "SELECT * FROM Venta WHERE Activo=1";
+                    command = new SqlCommand(sqlSelectString, conn);
+                    command.Connection.Open();
+
+                    SqlDataReader reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        Venta ven = new Venta();
+                        string _Codigo_venta_temp = reader[0].ToString();
+                        ven.Codigo = int.Parse(_Codigo_venta_temp);
+                        string _Descuento_temp = reader[1].ToString();
+                        ven.Descuento = int.Parse(_Descuento_temp);
+                        string _Precio_total_temp = reader[2].ToString();
+                        ven.Precio_total = double.Parse(_Precio_total_temp);
+                        ven.Codigo_sucursal = reader[3].ToString();
+                        string _Cedula_cajero_temp = reader[4].ToString();
+                        ven.Cedula_cajero = int.Parse(_Cedula_cajero_temp);
+                        venList.Add(ven);
+                    }
+                    command.Connection.Close();
+                    return venList;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                err.ErrorMessage = ex.Message.ToString();
+                throw;
+            }
+        }
+        #endregion
         #region Operaciones sobre Horas
         /// <summary>
         /// Database INSERT - Add a Horas
         /// </summary>
         /// <param name="hor"></param>
-        public void AddHoras(Horas hor)
+        public bool AddHoras(Horas hor)
         {
             try
             {
@@ -929,6 +1248,7 @@ namespace DAL
                     command.Parameters.AddRange(new SqlParameter[] { ID_semanaparam, Horas_ordinariasparam, Horas_extraparam, Ced_empleadoparam });
                     command.ExecuteNonQuery();
                     command.Connection.Close();
+                    return true;
 
                 }
             }
@@ -942,14 +1262,14 @@ namespace DAL
         /// Database UPDATE - Update a Horas
         /// </summary>
         /// <param name="hor"></param>
-        public void UpdateHoras(Horas hor)
+        public bool UpdateHoras(Horas hor)
         {
             try
             {
                 using (conn)
                 {
                     string sqlUpdateString =
-                    "UPDATE Horas SET Horas_ordinarias=@horas_ordinarias, Horas_extras=@horas_extras, Ced_empleado=@ced_empleado WHERE ID_semana=@id_semana";
+                    "UPDATE Horas SET Horas_ordinarias=@horas_ordinarias, Horas_extras=@horas_extras WHERE ID_semana=@id_semana AND Ced_empleado=@ced_empleado";
                     conn = new SqlConnection(connString);
 
                     command = new SqlCommand();
@@ -964,7 +1284,26 @@ namespace DAL
 
                     command.Parameters.AddRange(new SqlParameter[] { ID_semanaparam, Horas_ordinariasparam, Horas_extraparam, Ced_empleadoparam });
                     command.ExecuteNonQuery();
+
+                    #region  Revision de que se hizo bien
+                    string buscarHoras = "SELECT * FROM Horas WHERE ID_semana=@id_semana AND Ced_empleado=@ced_empleado";
+                    string horasEncontradas = "";
+                    command.CommandText = buscarHoras;
+                    SqlDataReader reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        horasEncontradas = reader[0].ToString();
+                    }
                     command.Connection.Close();
+                    if (horasEncontradas != "")
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                    #endregion
                 }
             }
             catch (Exception ex)
@@ -977,14 +1316,14 @@ namespace DAL
         /// Database DELETE - Delete a Horas
         /// </summary>
         /// <param name="semana"></param>
-        public void DeleteHoras(string semana)
+        public bool DeleteHoras(string semana, int ced_empleado)
         {
             try
             {
                 using (conn)
                 {
                     string sqlDeleteString =
-                    "DELETE FROM Horas WHERE ID_semana=@id_semana";
+                    "DELETE FROM Horas WHERE ID_semana=@id_semana AND Ced_empleado=@ced_empleado";
 
                     conn = new SqlConnection(connString);
 
@@ -994,9 +1333,11 @@ namespace DAL
                     command.CommandText = sqlDeleteString;
 
                     SqlParameter ID_semanaparam = new SqlParameter("@id_semana", semana);
-                    command.Parameters.Add(ID_semanaparam);
+                    SqlParameter Ced_empleadoparam = new SqlParameter("@ced_empleado", ced_empleado);
+                    command.Parameters.AddRange(new SqlParameter[] { ID_semanaparam, Ced_empleadoparam });
                     command.ExecuteNonQuery();
                     command.Connection.Close();
+                    return true;
                 }
             }
             catch (Exception ex)
@@ -1010,7 +1351,7 @@ namespace DAL
         /// </summary>
         /// <param name="semana"></param>
         /// <returns></returns>
-        public Horas GetHoras(string semana)
+        public Horas GetHoras(string semana, int ced_empleado)
         {
             try
             {
@@ -1022,7 +1363,7 @@ namespace DAL
                 // and select the concerned employee
                 foreach (Horas hor in horList)
                 {
-                    if (hor.ID_semana == semana)
+                    if (hor.ID_semana == semana && hor.Ced_empleado == ced_empleado)
                     {
                         return hor;
                     }
@@ -1083,7 +1424,7 @@ namespace DAL
         /// Database INSERT - Add a Producto
         /// </summary>
         /// <param name="produ"></param>
-        public void AddProducto(Producto produ)
+        public bool AddProducto(Producto produ)
         {
             try
             {
@@ -1115,6 +1456,7 @@ namespace DAL
                     command.Parameters.AddRange(new SqlParameter[] { Exentoparam, Codigo_barrasparam, Nombreparam, Descripcionparam, Impuestoparam, Precio_compraparam, Descuentoparam, Codigo_sucursalparam, Cantidadparam, Precio_ventaparam, Cedula_proveedorparam });
                     command.ExecuteNonQuery();
                     command.Connection.Close();
+                    return true;
 
                 }
             }
@@ -1128,14 +1470,14 @@ namespace DAL
         /// Database UPDATE - Update a Producto
         /// </summary>
         /// <param name="produ"></param>
-        public void UpdateProducto(Producto produ)
+        public bool UpdateProducto(Producto produ)
         {
             try
             {
                 using (conn)
                 {
                     string sqlUpdateString =
-                    "UPDATE Producto SET Exento=@exento, Nombre=@nombre, Descripcion=@descripcion, Impuesto=@impuesto, Precio_compra=@precio_compra, Descuento=@descuento, Codigo_sucursal=@codigo_sucursal, Cantidad=@cantidad, Precio_venta=@precio_venta, Cedula_proveedor=@cedula_proveedor WHERE Codigo_barras=@codigo_barras ";
+                    "UPDATE Producto SET Exento=@exento, Nombre=@nombre, Descripcion=@descripcion, Impuesto=@impuesto, Precio_compra=@precio_compra, Descuento=@descuento, Cantidad=@cantidad, Precio_venta=@precio_venta, Cedula_proveedor=@cedula_proveedor WHERE Codigo_barras=@codigo_barras AND Codigo_sucursal=@codigo_sucursal";
                     conn = new SqlConnection(connString);
 
                     command = new SqlCommand();
@@ -1157,7 +1499,26 @@ namespace DAL
 
                     command.Parameters.AddRange(new SqlParameter[] { Exentoparam, Codigo_barrasparam, Nombreparam, Descripcionparam, Impuestoparam, Precio_compraparam, Descuentoparam, Codigo_sucursalparam, Cantidadparam, Precio_ventaparam, Cedula_proveedorparam });
                     command.ExecuteNonQuery();
+
+                    #region  Revision de que se hizo bien
+                    string buscarProducto = "SELECT * FROM Producto WHERE Codigo_barras=@codigo_barras AND Codigo_sucursal=@codigo_sucursal";
+                    string productoEncontrado = "";
+                    command.CommandText = buscarProducto;
+                    SqlDataReader reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        productoEncontrado = reader[0].ToString();
+                    }
                     command.Connection.Close();
+                    if (productoEncontrado != "")
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                    #endregion
                 }
             }
             catch (Exception ex)
@@ -1170,14 +1531,14 @@ namespace DAL
         /// Database DELETE - Delete a Producto
         /// </summary>
         /// <param name="codigo_barras"></param>
-        public void DeleteProducto(int codigo_barras)
+        public bool DeleteProducto(int codigo_barras, string codigo_sucursal)
         {
             try
             {
                 using (conn)
                 {
                     string sqlDeleteString =
-                    "DELETE FROM Producto WHERE Codigo_barras=@codigo_barras ";
+                    "UPDATE Producto SET Cantidad=0  WHERE Codigo_barras=@codigo_barras AND Codigo_sucursal=@codigo_sucursal";
 
                     conn = new SqlConnection(connString);
 
@@ -1187,9 +1548,28 @@ namespace DAL
                     command.CommandText = sqlDeleteString;
 
                     SqlParameter Codigo_barrasparam = new SqlParameter("@codigo_barras", codigo_barras);
-                    command.Parameters.Add(Codigo_barrasparam);
+                    SqlParameter Codigo_sucursalparam = new SqlParameter("@codigo_sucursal", codigo_sucursal);
+                    command.Parameters.AddRange(new SqlParameter[] { Codigo_barrasparam, Codigo_sucursalparam });
                     command.ExecuteNonQuery();
+                    #region  Revision de que se hizo bien
+                    string buscarProducto = "SELECT * FROM Producto WHERE Codigo_barras=@codigo_barras AND Codigo_sucursal=@codigo_sucursal";
+                    string productoEncontrado = "";
+                    command.CommandText = buscarProducto;
+                    SqlDataReader reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        productoEncontrado = reader[0].ToString();
+                    }
                     command.Connection.Close();
+                    if (productoEncontrado != "")
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                    #endregion
                 }
             }
             catch (Exception ex)
@@ -1203,7 +1583,7 @@ namespace DAL
         /// </summary>
         /// <param name="codigo_barras"></param>
         /// <returns></returns>
-        public Producto GetProducto(int codigo_barras)
+        public Producto GetProducto(int codigo_barras, string codigo_sucursal)
         {
             try
             {
@@ -1215,7 +1595,7 @@ namespace DAL
                 // and select the concerned employee
                 foreach (Producto produ in produList)
                 {
-                    if (produ.Codigo_barras == codigo_barras)
+                    if (produ.Codigo_barras == codigo_barras && produ.Codigo_sucursal == codigo_sucursal)
                     {
                         return produ;
                     }
@@ -1295,7 +1675,7 @@ namespace DAL
         /// Database INSERT - Add a Producto en compra
         /// </summary>
         /// <param name="producomp"></param>
-        public void AddProductocompra(Productos_en_compra producomp)
+        public bool AddProductocompra(Productos_en_compra producomp)
         {
             try
             {
@@ -1319,6 +1699,7 @@ namespace DAL
                     command.Parameters.AddRange(new SqlParameter[] { Codigo_productoparam, Codigo_compraparam, Cantidadparam });
                     command.ExecuteNonQuery();
                     command.Connection.Close();
+                    return true;
 
                 }
             }
@@ -1332,14 +1713,14 @@ namespace DAL
         /// Database UPDATE - Update a Producto en compra
         /// </summary>
         /// <param name="producomp"></param>
-        public void UpdateProductocompra(Productos_en_compra producomp)
+        public bool UpdateProductocompra(Productos_en_compra producomp)
         {
             try
             {
                 using (conn)
                 {
                     string sqlUpdateString =
-                    "UPDATE Productos_en_compra SET Cantidad=@cantidad, Codigo_producto=@codigo_producto WHERE Codigo_compra=@codigo_compra";
+                    "UPDATE Productos_en_compra SET Cantidad=@cantidad WHERE Codigo_compra=@codigo_compra AND Codigo_producto=@codigo_producto";
                     conn = new SqlConnection(connString);
 
                     command = new SqlCommand();
@@ -1353,7 +1734,27 @@ namespace DAL
 
                     command.Parameters.AddRange(new SqlParameter[] { Codigo_productoparam, Codigo_compraparam, Cantidadparam });
                     command.ExecuteNonQuery();
+                    #region  Revision de que se hizo bien
+                    string buscarProductoCompra = "SELECT * FROM Productos_en_compra WHERE Codigo_compra=@codigo_compra AND Codigo_producto=@codigo_producto";
+                    string productoCompraEncontrado = "";
+                    command.CommandText = buscarProductoCompra;
+                    SqlDataReader reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        productoCompraEncontrado = reader[0].ToString();
+                    }
                     command.Connection.Close();
+                    if (productoCompraEncontrado != "")
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                    #endregion
+
+
                 }
             }
             catch (Exception ex)
@@ -1366,14 +1767,14 @@ namespace DAL
         /// Database DELETE - Delete a Producto en compra
         /// </summary>
         /// <param name="codigo_compra"></param>
-        public void DeleteProductocompra(int codigo_compra)
+        public bool DeleteProductocompra(int codigo_compra,int codigo_producto)
         {
             try
             {
                 using (conn)
                 {
                     string sqlDeleteString =
-                    "DELETE FROM Productos_en_compra WHERE Codigo_compra=@codigo_compra";
+                    "DELETE FROM Productos_en_compra WHERE Codigo_compra=@codigo_compra AND Codigo_producto=@codigo_producto";
 
                     conn = new SqlConnection(connString);
 
@@ -1383,9 +1784,11 @@ namespace DAL
                     command.CommandText = sqlDeleteString;
 
                     SqlParameter codigo_compraparam = new SqlParameter("@codigo_compra", codigo_compra);
-                    command.Parameters.Add(codigo_compraparam);
+                    SqlParameter codigo_productoparam = new SqlParameter("@codigo_producto", codigo_producto);
+                    command.Parameters.AddRange(new SqlParameter[] { codigo_compraparam, codigo_productoparam });
                     command.ExecuteNonQuery();
                     command.Connection.Close();
+                    return true;
                 }
             }
             catch (Exception ex)
@@ -1399,7 +1802,7 @@ namespace DAL
         /// </summary>
         /// <param name="codigo_compra"></param>
         /// <returns></returns>
-        public Productos_en_compra GetProducto_en_compra(int codigo_compra)
+        public Productos_en_compra GetProducto_en_compra(int codigo_compra, int codigo_producto)
         {
             try
             {
@@ -1411,7 +1814,7 @@ namespace DAL
                 // and select the concerned employee
                 foreach (Productos_en_compra producomp in producompList)
                 {
-                    if (producomp.Codigo_compra == codigo_compra)
+                    if (producomp.Codigo_compra == codigo_compra && producomp.Codigo_producto == codigo_producto)
                     {
                         return producomp;
                     }
@@ -1472,7 +1875,7 @@ namespace DAL
         /// Database INSERT - Add a Producto en venta
         /// </summary>
         /// <param name="produven"></param>
-        public void AddProductoventa(Productos_en_venta produven)
+        public bool AddProductoventa(Productos_en_venta produven)
         {
             try
             {
@@ -1490,14 +1893,15 @@ namespace DAL
                     command.CommandText = sqlInserString;
 
                     SqlParameter Codigo_productoparam = new SqlParameter("@codigo_producto", produven.Codigo_producto.ToString());
-                    SqlParameter Codigo_ventaparam = new SqlParameter("@codigo_compra", produven.Codigo_venta.ToString());
+                    SqlParameter Codigo_ventaparam = new SqlParameter("@codigo_venta", produven.Codigo_venta.ToString());
                     SqlParameter Cantidadparam = new SqlParameter("@cantidad", produven.Cantidad.ToString());
-                    SqlParameter Precio_individualparam = new SqlParameter("@cantidad", produven.Precio_individual.ToString());
+                    SqlParameter Precio_individualparam = new SqlParameter("@precio_individual", produven.Precio_individual.ToString());
 
 
                     command.Parameters.AddRange(new SqlParameter[] { Codigo_productoparam, Precio_individualparam, Cantidadparam, Codigo_ventaparam});
                     command.ExecuteNonQuery();
                     command.Connection.Close();
+                    return true;
 
                 }
             }
@@ -1511,14 +1915,14 @@ namespace DAL
         /// Database UPDATE - Update a Producto en venta
         /// </summary>
         /// <param name="produven"></param>
-        public void UpdateProductoventa(Productos_en_venta produven)
+        public bool UpdateProductoventa(Productos_en_venta produven)
         {
             try
             {
                 using (conn)
                 {
                     string sqlUpdateString =
-                    "UPDATE Productos_en_venta SET Codigo_producto=@codigo_producto, Cantidad=@cantidad, Precio_individual=@precio_individual WHERE Codigo_venta=@codigo_venta";
+                    "UPDATE Productos_en_venta SET Cantidad=@cantidad, Precio_individual=@precio_individual WHERE Codigo_venta=@codigo_venta AND Codigo_producto=@codigo_producto";
                     conn = new SqlConnection(connString);
 
                     command = new SqlCommand();
@@ -1527,14 +1931,32 @@ namespace DAL
                     command.CommandText = sqlUpdateString;
 
                     SqlParameter Codigo_productoparam = new SqlParameter("@codigo_producto", produven.Codigo_producto.ToString());
-                    SqlParameter Codigo_ventaparam = new SqlParameter("@codigo_compra", produven.Codigo_venta.ToString());
+                    SqlParameter Codigo_ventaparam = new SqlParameter("@codigo_venta", produven.Codigo_venta.ToString());
                     SqlParameter Cantidadparam = new SqlParameter("@cantidad", produven.Cantidad.ToString());
-                    SqlParameter Precio_individualparam = new SqlParameter("@cantidad", produven.Precio_individual.ToString());
+                    SqlParameter Precio_individualparam = new SqlParameter("@precio_individual", produven.Precio_individual.ToString());
 
 
                     command.Parameters.AddRange(new SqlParameter[] { Codigo_productoparam, Precio_individualparam, Cantidadparam, Codigo_ventaparam });
                     command.ExecuteNonQuery();
+                    #region  Revision de que se hizo bien
+                    string buscarProductoVenta = "SELECT * FROM Productos_en_venta WHERE Codigo_venta=@codigo_venta AND Codigo_producto=@codigo_producto";
+                    string productoVentaEncontrado = "";
+                    command.CommandText = buscarProductoVenta;
+                    SqlDataReader reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        productoVentaEncontrado = reader[0].ToString();
+                    }
                     command.Connection.Close();
+                    if (productoVentaEncontrado != "")
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                    #endregion
                 }
             }
             catch (Exception ex)
@@ -1547,14 +1969,14 @@ namespace DAL
         /// Database DELETE - Delete a Producto en venta
         /// </summary>
         /// <param name="codigo_venta"></param>
-        public void DeleteProductoventa(int codigo_venta)
+        public void DeleteProductoventa(int codigo_venta, int codigo_producto)
         {
             try
             {
                 using (conn)
                 {
                     string sqlDeleteString =
-                    "DELETE FROM Productos_en_venta WHERE Codigo_venta=@codigo_venta";
+                    "DELETE FROM Productos_en_venta WHERE Codigo_venta=@codigo_venta AND Codigo_producto = codigo_producto";
 
                     conn = new SqlConnection(connString);
 
@@ -1564,6 +1986,7 @@ namespace DAL
                     command.CommandText = sqlDeleteString;
 
                     SqlParameter codigo_ventaparam = new SqlParameter("@codigo_venta", codigo_venta);
+                    SqlParameter codigo_productoparam = new SqlParameter("@codigo_producto", codigo_producto);
                     command.Parameters.Add(codigo_ventaparam);
                     command.ExecuteNonQuery();
                     command.Connection.Close();
@@ -1580,7 +2003,7 @@ namespace DAL
         /// </summary>
         /// <param name="codigo_venta"></param>
         /// <returns></returns>
-        public Productos_en_venta GetProducto_en_venta(int codigo_venta)
+        public Productos_en_venta GetProducto_en_venta(int codigo_venta, int codigo_producto)
         {
             try
             {
@@ -1592,7 +2015,7 @@ namespace DAL
                 // and select the concerned employee
                 foreach (Productos_en_venta produven in produvenList)
                 {
-                    if (produven.Codigo_venta == codigo_venta)
+                    if (produven.Codigo_venta == codigo_venta && produven.Codigo_producto == codigo_producto)
                     {
                         return produven;
                     }
@@ -1650,6 +2073,7 @@ namespace DAL
             }
         }
         #endregion
+
         #region Operaciones sobre proveedores
         /// <summary>
         /// Database INSERT - Add a Proveedor
@@ -1998,189 +2422,7 @@ namespace DAL
             }
         }
         #endregion
-        #region Operaciones sobre ventas
-        /// <summary>
-        /// Database INSERT - Add a Venta
-        /// </summary>
-        /// <param name="ven"></param>
-        public void AddVenta(Venta ven)
-        {
-            try
-            {
-                using (conn)
-                {
-                    //using parametirized query
-                    string sqlInserString =
-                    "INSERT INTO Venta (Codigo, Descuento, Precio_total, Codigo_sucursal, Cedula_cajero) VALUES (@codigo, @descuento, @precio_total, @codigo_sucursal, @cedula_cajero)";
-
-                    conn = new SqlConnection(connString);
-
-                    command = new SqlCommand();
-                    command.Connection = conn;
-                    command.Connection.Open();
-                    command.CommandText = sqlInserString;
-
-                    SqlParameter Codigoparam = new SqlParameter("@codigo", ven.Codigo.ToString());
-                    SqlParameter Descuentoparam = new SqlParameter("@descuento", ven.Descuento.ToString());
-                    SqlParameter Precio_totalparam = new SqlParameter("@precio_total", ven.Precio_total.ToString());
-                    SqlParameter Codigo_sucursalparam = new SqlParameter("@codigo_sucursal", ven.Codigo_sucursal);
-                    SqlParameter Cedula_cajeroparam = new SqlParameter("@cedula_cajero", ven.Cedula_cajero.ToString());
-                   
-                    command.Parameters.AddRange(new SqlParameter[] { Codigoparam, Descuentoparam, Precio_totalparam, Codigo_sucursalparam, Cedula_cajeroparam });
-                    command.ExecuteNonQuery();
-                    command.Connection.Close();
-
-                }
-            }
-            catch (Exception ex)
-            {
-                err.ErrorMessage = ex.Message.ToString();
-                throw;
-            }
-        }
-        /// <summary>
-        /// Database UPDATE - Update a Venta
-        /// </summary>
-        /// <param name="ven"></param>
-        public void UpdateVenta(Venta ven)
-        {
-            try
-            {
-                using (conn)
-                {
-                    string sqlUpdateString =
-                    "UPDATE Venta SET Descuento=@descuento, Precio_total=@precio_total, Codigo_sucursal=@codigo_sucursal, Cedula_cajero=@cedula_cajero WHERE Codigo=@codigo ";
-                    conn = new SqlConnection(connString);
-
-                    command = new SqlCommand();
-                    command.Connection = conn;
-                    command.Connection.Open();
-                    command.CommandText = sqlUpdateString;
-
-                    SqlParameter Codigoparam = new SqlParameter("@codigo", ven.Codigo.ToString());
-                    SqlParameter Descuentoparam = new SqlParameter("@descuento", ven.Descuento.ToString());
-                    SqlParameter Precio_totalparam = new SqlParameter("@precio_total", ven.Precio_total.ToString());
-                    SqlParameter Codigo_sucursalparam = new SqlParameter("@codigo_sucursal", ven.Codigo_sucursal);
-                    SqlParameter Cedula_cajeroparam = new SqlParameter("@cedula_cajero", ven.Cedula_cajero.ToString());
-
-                    command.Parameters.AddRange(new SqlParameter[] { Codigoparam, Descuentoparam, Precio_totalparam, Codigo_sucursalparam, Cedula_cajeroparam });
-                    command.ExecuteNonQuery();
-                    command.Connection.Close();
-                }
-            }
-            catch (Exception ex)
-            {
-                err.ErrorMessage = ex.Message.ToString();
-                throw;
-            }
-        }
-        /// <summary>
-        /// Database DELETE - Delete a Venta
-        /// </summary>
-        /// <param name="codigo"></param>
-        public void DeleteVenta(int codigo)
-        {
-            try
-            {
-                using (conn)
-                {
-                    string sqlDeleteString =
-                    "DELETE FROM Venta WHERE Codigo=@codigo ";
-
-                    conn = new SqlConnection(connString);
-
-                    command = new SqlCommand();
-                    command.Connection = conn;
-                    command.Connection.Open();
-                    command.CommandText = sqlDeleteString;
-
-                    SqlParameter codigoparam = new SqlParameter("@codigo", codigo);
-                    command.Parameters.Add(codigoparam);
-                    command.ExecuteNonQuery();
-                    command.Connection.Close();
-                }
-            }
-            catch (Exception ex)
-            {
-                err.ErrorMessage = ex.Message.ToString();
-                throw;
-            }
-        }
-        /// <summary>
-        /// Database SELECT - Get an employee
-        /// </summary>
-        /// <param name="codigo"></param>
-        /// <returns></returns>
-        public Venta GetVenta(int codigo)
-        {
-            try
-            {
-                if (venList == null)
-                {
-                    venList = GetVentas();
-                }
-                // enumerate through all employee list
-                // and select the concerned employee
-                foreach (Venta ven in venList)
-                {
-                    if (ven.Codigo == codigo)
-                    {
-                        return ven;
-                    }
-                }
-                return null;
-            }
-            catch (Exception ex)
-            {
-                err.ErrorMessage = ex.Message.ToString();
-                throw;
-            }
-        }
-        /// <summary>
-        /// Method - Get list of all Ventas
-        /// </summary>
-        /// <returns>Venta</returns>
-        public List<Venta> GetVentas()
-        {
-            try
-            {
-                using (conn)
-                {
-                    venList = new List<Venta>();
-
-                    conn = new SqlConnection(connString);
-
-                    string sqlSelectString = "SELECT * FROM Venta";
-                    command = new SqlCommand(sqlSelectString, conn);
-                    command.Connection.Open();
-
-                    SqlDataReader reader = command.ExecuteReader();
-                    while (reader.Read())
-                    {
-                        Venta ven = new Venta();
-                        string _Codigo_venta_temp = reader[0].ToString();
-                        ven.Codigo = int.Parse(_Codigo_venta_temp);
-                        string _Descuento_temp = reader[1].ToString();
-                        ven.Descuento = int.Parse(_Descuento_temp);
-                        string _Precio_total_temp = reader[2].ToString();
-                        ven.Precio_total = double.Parse(_Precio_total_temp);
-                        ven.Codigo_sucursal = reader[3].ToString();
-                        string _Cedula_cajero_temp = reader[4].ToString();
-                        ven.Cedula_cajero = int.Parse(_Cedula_cajero_temp);
-                        venList.Add(ven);
-                    }
-                    command.Connection.Close();
-                    return venList;
-                }
-
-            }
-            catch (Exception ex)
-            {
-                err.ErrorMessage = ex.Message.ToString();
-                throw;
-            }
-        }
-        #endregion
+        
         /// <summary>
         /// Get Exception if any
         /// </summary>

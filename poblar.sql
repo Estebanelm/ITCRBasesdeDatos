@@ -1,0 +1,17 @@
+--insert into rol (Nombre, Descripcion, Ced_empleado) values ('Administrador', 'Administra sucursales', 1110);
+--alter table venta alter column Cedula_cajero [int] NULL;
+--delete from Categoria
+--insert into Categoria (Descripcion) values ('frutas')
+--insert into Categoria (Descripcion) values ('verduras')
+--insert into Categoria (Descripcion) values ('carnes')
+--drop table Categoria
+--alter table venta add [Activo] [bit] Default 1
+--drop table horas
+--insert into Horas (ID_semana,Horas_ordinarias,Horas_extras,Ced_empleado) values ('17-14',45,10,115250560)
+--alter table productos_en_compra alter column Codigo_producto [int] NULL;
+--alter table productos_en_venta alter column Codigo_producto [int] NULL;
+--update Productos_en_compra set Codigo_producto=NULL where Codigo_compra=1
+--update Productos_en_venta set Codigo_producto=NULL where Codigo_venta=1
+
+--alter table Producto add constraint PK_ProductoSucursal PRIMARY KEY ([Codigo_barras] ASC, [Codigo_sucursal] ASC) ON [PRIMARY]
+--drop table Producto

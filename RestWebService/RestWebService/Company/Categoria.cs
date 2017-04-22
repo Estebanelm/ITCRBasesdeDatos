@@ -19,8 +19,15 @@ namespace L3MDB
 
         public Categoria(HttpContext context)
         {
-            string ID_temp = context.Request["ID"];
-            _ID = int.Parse(ID_temp);
+            if (context.Request["ID"] == null)
+            {
+                _ID = 0;
+            }
+            else
+            {
+                string _ID_temp = context.Request["ID"];
+                _ID = int.Parse(_ID_temp);
+            }
             _Descripcion = context.Request["Descripcion"];
             string _Codigo_producto_temp = context.Request["ID_producto"];
             _Codigo_producto = int.Parse(_Codigo_producto_temp);
