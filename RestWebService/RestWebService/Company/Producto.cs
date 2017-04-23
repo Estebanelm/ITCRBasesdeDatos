@@ -39,13 +39,13 @@ namespace L3MDB
             _Precio_compra = double.Parse(_Precio_compra_temp);
             string _Descuento_temp = context.Request["Descuento"];
             _Descuento = int.Parse(_Descuento_temp);
-            _Codigo_sucursal = context.Request["Sucursal"];
+            _Codigo_sucursal = context.Request["Codigo_sucursal"];
             string _Cantidad_temp = context.Request["Cantidad"];
             _Cantidad = int.Parse(_Cantidad_temp);
             string _Precio_venta_temp = context.Request["Precio_venta"];
             _Precio_venta = double.Parse(_Precio_venta_temp);
-            string _Proveedor_temp = context.Request["Proveedor"];
-            if (_Proveedor_temp == "")
+            string _Proveedor_temp = context.Request["Cedula_proveedor"];
+            if (_Proveedor_temp == null)
             {
                 _Cedula_proveedor = 0;
             }

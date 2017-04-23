@@ -23,17 +23,19 @@ namespace TestHarness
             Empleado emp = new Empleado();
             Sucursal suc = new Sucursal();
             string strConnString = "Data Source=LAPTOP-2E6BHQDP\\SQLEXPRESS;Initial Catalog=L3MDB;Integrated Security=True";
-            DAL.DAL dal = new DAL.DAL(strConnString);
+            DAL.Operations dal = new DAL.Operations(strConnString);
 
             #region "Test database Functionalities"
 
             //dal.DeleteEmpleado(1110);
             //dal.GetSucursal("SJ45");
-            Categoria newcat = new Categoria();
-            newcat.ID = 0;
-            newcat.Codigo_producto = 123456;
-            newcat.Descripcion = "Comida para perro";
-            dal.AddCategoria(newcat);
+            //Categoria newcat = new Categoria();
+            //newcat.ID = 0;
+            //newcat.Codigo_producto = 123456;
+            //newcat.Descripcion = "Comida para perro";
+            //dal.AddCategoria(newcat);
+            //dal.GetVentas
+            dal.GetHoras("17-14", 115250560);
             //TestSelectCommand(suc, dal);
             //TestInsertCommand(emp, dal);
             //TestUpdateCommand(emp, dal);
@@ -52,14 +54,14 @@ namespace TestHarness
             Console.ReadLine();
         }
 
-        private static void TestSelectCommand(Sucursal emp, DAL.DAL dal)
+        private static void TestSelectCommand(Sucursal emp, DAL.Operations dal)
         {
             Console.WriteLine("Testing Select command");
             emp = dal.GetSucursal("SJ45");
             Console.WriteLine(emp.Nombre);
         }
 
-        private static void TestInsertCommand(Empleado emp, DAL.DAL dal)
+        private static void TestInsertCommand(Empleado emp, DAL.Operations dal)
         {
             Console.WriteLine("Testing Insert Command");
             emp = new Empleado();
@@ -77,7 +79,7 @@ namespace TestHarness
             PrintEmployeeInformation(newEmp);           
         }
 
-        private static void TestUpdateCommand(Empleado emp, DAL.DAL dal)
+        private static void TestUpdateCommand(Empleado emp, DAL.Operations dal)
         {
             Console.WriteLine("Testing Update Command");
             emp = new Empleado();
@@ -89,7 +91,7 @@ namespace TestHarness
             PrintEmployeeInformation(emp);
         }
 
-        private static void TestDeleteCommand(Empleado emp, DAL.DAL dal)
+        private static void TestDeleteCommand(Empleado emp, DAL.Operations dal)
         {
             Console.WriteLine("Testing Delete Command");
             dal.DeleteEmpleado(1110);

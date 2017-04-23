@@ -34,7 +34,7 @@ namespace L3MDB
             _Descuento = int.Parse(_Descuento_temp);
             string _Precio_total_temp = context.Request["Precio_total"];
             _Precio_total = double.Parse(_Precio_total_temp);
-            _Codigo_sucursal = context.Request["Sucursal"];
+            _Codigo_sucursal = context.Request["codigo_sucursal"];
             string _Cedula_cajero_temp = context.Request["Cedula_cajero"];
             _Cedula_cajero = int.Parse(_Cedula_cajero_temp);
         }

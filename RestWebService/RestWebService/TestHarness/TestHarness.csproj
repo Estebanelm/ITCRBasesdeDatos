@@ -80,9 +80,9 @@
       <Project>{0D6734C9-3EB9-4843-9CBF-41B76CE39F73}</Project>
       <Name>L3MDB</Name>
     </ProjectReference>
-    <ProjectReference Include="..\DAL\DAL.csproj">
+    <ProjectReference Include="..\DAL\Operations.csproj">
       <Project>{0BBE7D5B-877A-43C8-8C4E-0793D13C6977}</Project>
-      <Name>DAL</Name>
+      <Name>Operations</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

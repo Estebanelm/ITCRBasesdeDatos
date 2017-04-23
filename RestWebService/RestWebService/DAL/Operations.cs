@@ -8,7 +8,7 @@ using System.Text;
 
 namespace DAL
 {
-    public class DAL
+    public class Operations
     {
         #region Variables internas
         private SqlConnection conn;
@@ -27,7 +27,7 @@ namespace DAL
         private static List<Venta> venList;
         private ErrorHandler.ErrorHandler err;
 
-        public DAL(string _connString)
+        public Operations(string _connString)
         {
             err = new ErrorHandler.ErrorHandler();
             connString = _connString;            
@@ -325,9 +325,9 @@ namespace DAL
 
                     SqlParameter Codigoparam = new SqlParameter("@codigo", suc.Codigo);
                     SqlParameter Nombreparam = new SqlParameter("@nombre", suc.Nombre);
-                    SqlParameter Telefonoparam = new SqlParameter("@telefono", suc.Telefono.ToString());
+                    SqlParameter Telefonoparam = new SqlParameter("@telefono", suc.Telefono);
                     SqlParameter Direccionparam = new SqlParameter("@direccion", suc.Direccion);
-                    SqlParameter Ced_administradorparam = new SqlParameter("@ced_administrador", suc.Ced_administrador.ToString());
+                    SqlParameter Ced_administradorparam = new SqlParameter("@ced_administrador", suc.Ced_administrador);
                     if (suc.Ced_administrador == 0)
                     {
                         sqlInserString = "INSERT INTO Sucursal (Codigo, Nombre, Telefono, Direccion, Ced_administrador) VALUES (@codigo, @nombre, @telefono, @direccion, NULL)";
@@ -995,13 +995,13 @@ namespace DAL
                         Compra com = new Compra();
                         string _Codigo_temp = reader[0].ToString();
                         com.Codigo = int.Parse(_Codigo_temp);
-                        string _Cedula_proveedor_temp = reader[0].ToString();
+                        string _Cedula_proveedor_temp = reader[1].ToString();
                         com.Cedula_proveedor = int.Parse(_Cedula_proveedor_temp);
-                        com.Descripcion = reader[0].ToString();
-                        com.Foto = reader[0].ToString();
-                        com.Fecha_Registro = reader[0].ToString();
-                        com.Fecha_real = reader[0].ToString();
-                        com.Codigo_sucursal = reader[0].ToString();
+                        com.Descripcion = reader[2].ToString();
+                        com.Foto = reader[3].ToString();
+                        com.Fecha_Registro = reader[4].ToString();
+                        com.Fecha_real = reader[5].ToString();
+                        com.Codigo_sucursal = reader[6].ToString();
                         comList.Add(com);
                     }
                     command.Connection.Close();
@@ -1198,12 +1198,33 @@ namespace DAL
                         string _Codigo_venta_temp = reader[0].ToString();
                         ven.Codigo = int.Parse(_Codigo_venta_temp);
                         string _Descuento_temp = reader[1].ToString();
-                        ven.Descuento = int.Parse(_Descuento_temp);
+                        if (_Descuento_temp == "")
+                        {
+                            ven.Descuento = 0;
+                        }
+                        else
+                        {
+                            ven.Descuento = int.Parse(_Descuento_temp);
+                        }
                         string _Precio_total_temp = reader[2].ToString();
-                        ven.Precio_total = double.Parse(_Precio_total_temp);
+                        if (_Precio_total_temp == "")
+                        {
+                            ven.Precio_total = 0;
+                        }
+                        else
+                        {
+                            ven.Precio_total = double.Parse(_Precio_total_temp);
+                        }
                         ven.Codigo_sucursal = reader[3].ToString();
                         string _Cedula_cajero_temp = reader[4].ToString();
-                        ven.Cedula_cajero = int.Parse(_Cedula_cajero_temp);
+                        if (_Cedula_cajero_temp == "")
+                        {
+                            ven.Cedula_cajero = 0;
+                        }
+                        else
+                        {
+                            ven.Cedula_cajero = int.Parse(_Cedula_cajero_temp);
+                        }
                         venList.Add(ven);
                     }
                     command.Connection.Close();
@@ -1231,7 +1252,7 @@ namespace DAL
                 {
                     //using parametirized query
                     string sqlInserString =
-                    "INSERT INTO Compra (ID_semana, Horas_ordinarias, Horas_extra, Ced_empleado) VALUES (@id_semana, @horas_ordinarias, @horas_extra, @ced_empleado)";
+                    "INSERT INTO Horas (ID_semana, Horas_ordinarias, Horas_extras, Ced_empleado) VALUES (@id_semana, @horas_ordinarias, @horas_extra, @ced_empleado)";
 
                     conn = new SqlConnection(connString);
 
@@ -1241,9 +1262,9 @@ namespace DAL
                     command.CommandText = sqlInserString;
 
                     SqlParameter ID_semanaparam = new SqlParameter("@id_semana", hor.ID_semana);
-                    SqlParameter Horas_ordinariasparam = new SqlParameter("@horas_ordinarias", hor.Horas_ordinarias.ToString());
-                    SqlParameter Horas_extraparam = new SqlParameter("@horas_extra", hor.Horas_extras.ToString());
-                    SqlParameter Ced_empleadoparam = new SqlParameter("@ced_empleado", hor.Ced_empleado.ToString());
+                    SqlParameter Horas_ordinariasparam = new SqlParameter("@horas_ordinarias", hor.Horas_ordinarias);
+                    SqlParameter Horas_extraparam = new SqlParameter("@horas_extras", hor.Horas_extras);
+                    SqlParameter Ced_empleadoparam = new SqlParameter("@ced_empleado", hor.Ced_empleado);
                     
                     command.Parameters.AddRange(new SqlParameter[] { ID_semanaparam, Horas_ordinariasparam, Horas_extraparam, Ced_empleadoparam });
                     command.ExecuteNonQuery();
@@ -1279,7 +1300,7 @@ namespace DAL
 
                     SqlParameter ID_semanaparam = new SqlParameter("@id_semana", hor.ID_semana);
                     SqlParameter Horas_ordinariasparam = new SqlParameter("@horas_ordinarias", hor.Horas_ordinarias.ToString());
-                    SqlParameter Horas_extraparam = new SqlParameter("@horas_extra", hor.Horas_extras.ToString());
+                    SqlParameter Horas_extraparam = new SqlParameter("@horas_extras", hor.Horas_extras.ToString());
                     SqlParameter Ced_empleadoparam = new SqlParameter("@ced_empleado", hor.Ced_empleado.ToString());
 
                     command.Parameters.AddRange(new SqlParameter[] { ID_semanaparam, Horas_ordinariasparam, Horas_extraparam, Ced_empleadoparam });
@@ -1402,7 +1423,14 @@ namespace DAL
                         string _horas_ordinarias_temp = reader[1].ToString();
                         hor.Horas_ordinarias = int.Parse(_horas_ordinarias_temp);
                         string _horas_extras_temp = reader[2].ToString();
-                        hor.Horas_extras = int.Parse(_horas_extras_temp);
+                        if (_horas_extras_temp == "")
+                        {
+                            hor.Horas_extras = 0;
+                        }
+                        else
+                        {
+                            hor.Horas_extras = int.Parse(_horas_extras_temp);
+                        }
                         string _ced_empleado_temp = reader[3].ToString();
                         hor.Ced_empleado = int.Parse(_ced_empleado_temp);
                         horList.Add(hor);
@@ -1432,7 +1460,7 @@ namespace DAL
                 {
                     //using parametirized query
                     string sqlInserString =
-                    "INSERT INTO Producto (Exento, Codigo_barras, Nombre, Descripcion, Impuesto, Precio_compra, Descuento, Codigo_sucursal, Cantidad, Precio_venta, Cedula_proveedor) VALUES (@exento, @codigo_barras, @descripcion, @impuesto, @precio_compra, @descuento, @codigo_sucursal, @cantidad, @precio_venta, @cedula_proveedor)";
+                    "INSERT INTO Producto (Exento, Codigo_barras, Nombre, Descripcion, Impuesto, Precio_compra, Descuento, Codigo_sucursal, Cantidad, Precio_venta, Cedula_proveedor) VALUES (@exento, @codigo_barras, @nombre, @descripcion, @impuesto, @precio_compra, @descuento, @codigo_sucursal, @cantidad, @precio_venta, @cedula_proveedor)";
 
                     conn = new SqlConnection(connString);
 
@@ -1644,7 +1672,14 @@ namespace DAL
                         produ.Descuento = int.Parse(_Descuento_temp);
                         produ.Codigo_sucursal = reader[7].ToString();
                         string _Cantidad_temp = reader[8].ToString();
-                        produ.Cantidad = int.Parse(_Cantidad_temp);
+                        if (_Cantidad_temp == "")
+                        {
+                            produ.Cantidad = 0;
+                        }
+                        else
+                        {
+                            produ.Cantidad = int.Parse(_Cantidad_temp);
+                        }
                         string _Precio_venta_temp = reader[9].ToString();
                         produ.Precio_venta = double.Parse(_Precio_venta_temp);
                         string _Proveedor_temp = reader[10].ToString();
@@ -1692,9 +1727,9 @@ namespace DAL
                     command.Connection.Open();
                     command.CommandText = sqlInserString;
 
-                    SqlParameter Codigo_productoparam = new SqlParameter("@codigo_producto", producomp.Codigo_producto.ToString());
-                    SqlParameter Codigo_compraparam = new SqlParameter("@codigo_compra", producomp.Codigo_compra.ToString());
-                    SqlParameter Cantidadparam = new SqlParameter("@cantidad", producomp.Cantidad.ToString());
+                    SqlParameter Codigo_productoparam = new SqlParameter("@codigo_producto", producomp.Codigo_producto);
+                    SqlParameter Codigo_compraparam = new SqlParameter("@codigo_compra", producomp.Codigo_compra);
+                    SqlParameter Cantidadparam = new SqlParameter("@cantidad", producomp.Cantidad);
                     
                     command.Parameters.AddRange(new SqlParameter[] { Codigo_productoparam, Codigo_compraparam, Cantidadparam });
                     command.ExecuteNonQuery();
@@ -1850,10 +1885,17 @@ namespace DAL
                     {
                         Productos_en_compra producomp = new Productos_en_compra();
                         string _Codigo_producto_temp = reader[0].ToString();
-                        producomp.Codigo_producto = int.Parse(_Codigo_producto_temp);
-                        string _Codigo_compra_temp = reader[0].ToString();
+                        if (_Codigo_producto_temp == "")
+                        {
+                            producomp.Codigo_producto = 0;
+                        }
+                        else
+                        {
+                            producomp.Codigo_producto = int.Parse(_Codigo_producto_temp);
+                        }
+                        string _Codigo_compra_temp = reader[1].ToString();
                         producomp.Codigo_compra = int.Parse(_Codigo_compra_temp);
-                        string _Cantidad_temp = reader[0].ToString();
+                        string _Cantidad_temp = reader[2].ToString();
                         producomp.Cantidad = int.Parse(_Cantidad_temp);
                         producompList.Add(producomp);
 
@@ -2051,7 +2093,14 @@ namespace DAL
                     {
                         Productos_en_venta produven = new Productos_en_venta();
                         string _Codigo_producto_temp = reader[0].ToString();
-                        produven.Codigo_producto = int.Parse(_Codigo_producto_temp);
+                        if (_Codigo_producto_temp == "")
+                        {
+                            produven.Codigo_producto = 0;
+                        }
+                        else
+                        {
+                            produven.Codigo_producto = int.Parse(_Codigo_producto_temp);
+                        }
                         string _Precio_individual_temp = reader[1].ToString();
                         produven.Precio_individual = double.Parse(_Precio_individual_temp);
                         string _Cantidad_temp = reader[2].ToString();
@@ -2073,13 +2122,12 @@ namespace DAL
             }
         }
         #endregion
-
         #region Operaciones sobre proveedores
         /// <summary>
         /// Database INSERT - Add a Proveedor
         /// </summary>
         /// <param name="prove"></param>
-        public void AddProveedor(Proveedor prove)
+        public bool AddProveedor(Proveedor prove)
         {
             try
             {
@@ -2096,13 +2144,14 @@ namespace DAL
                     command.Connection.Open();
                     command.CommandText = sqlInserString;
 
-                    SqlParameter Cedulaparam = new SqlParameter("@cedula", prove.Cedula.ToString());
+                    SqlParameter Cedulaparam = new SqlParameter("@cedula", prove.Cedula);
                     SqlParameter Tipoparam = new SqlParameter("@tipo", prove.Tipo);
                     SqlParameter Nombreparam = new SqlParameter("@nombre", prove.Nombre);
 
                     command.Parameters.AddRange(new SqlParameter[] { Cedulaparam, Tipoparam, Nombreparam });
                     command.ExecuteNonQuery();
                     command.Connection.Close();
+                    return true;
 
                 }
             }
@@ -2116,7 +2165,7 @@ namespace DAL
         /// Database UPDATE - Update a Proveedor
         /// </summary>
         /// <param name="prove"></param>
-        public void UpdateProveedor(Proveedor prove)
+        public bool UpdateProveedor(Proveedor prove)
         {
             try
             {
@@ -2137,7 +2186,25 @@ namespace DAL
 
                     command.Parameters.AddRange(new SqlParameter[] { Cedulaparam, Tipoparam, Nombreparam });
                     command.ExecuteNonQuery();
+                    #region  Revision de que se hizo bien
+                    string buscarProveedor = "SELECT * FROM Proveedor WHERE Cedula=@cedula";
+                    string proveedorEncontrado = "";
+                    command.CommandText = buscarProveedor;
+                    SqlDataReader reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        proveedorEncontrado = reader[0].ToString();
+                    }
                     command.Connection.Close();
+                    if (proveedorEncontrado != "")
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                    #endregion
                 }
             }
             catch (Exception ex)
@@ -2150,7 +2217,7 @@ namespace DAL
         /// Database DELETE - Delete a Proveeodr
         /// </summary>
         /// <param name="cedula"></param>
-        public void DeleteProveedor(int cedula)
+        public bool DeleteProveedor(int cedula)
         {
             try
             {
@@ -2164,12 +2231,25 @@ namespace DAL
                     command = new SqlCommand();
                     command.Connection = conn;
                     command.Connection.Open();
-                    command.CommandText = sqlDeleteString;
+                    
 
                     SqlParameter cedulaparam = new SqlParameter("@cedula", cedula);
                     command.Parameters.Add(cedulaparam);
+                    #region Borrar prove de Compra
+                    string sqlBorrarProveCompra = "UPDATE Compra SET Cedula_proveedor=NULL WHERE Cedula_proveedor=@cedula";
+                    command.CommandText = sqlBorrarProveCompra;
+                    command.ExecuteNonQuery();
+                    #endregion
+                    #region Borrar prove de Producto
+                    string sqlBorrarProveProducto = "UPDATE Producto SET Cedula_proveedor=NULL WHERE Cedula_proveedor=@cedula";
+                    command.CommandText = sqlBorrarProveProducto;
+                    command.ExecuteNonQuery();
+                    #endregion
+
+                    command.CommandText = sqlDeleteString;
                     command.ExecuteNonQuery();
                     command.Connection.Close();
+                    return true;
                 }
             }
             catch (Exception ex)
@@ -2232,8 +2312,8 @@ namespace DAL
                         Proveedor prove = new Proveedor();
                         string _Cedula_temp = reader[0].ToString();
                         prove.Cedula = int.Parse(_Cedula_temp);
-                        prove.Tipo = reader[0].ToString();
-                        prove.Nombre = reader[0].ToString();
+                        prove.Tipo = reader[1].ToString();
+                        prove.Nombre = reader[2].ToString();
                         proveList.Add(prove);
                     }
                     command.Connection.Close();
@@ -2253,31 +2333,41 @@ namespace DAL
         /// Database INSERT - Add a Rol
         /// </summary>
         /// <param name="rol"></param>
-        public void AddRol(Rol rol)
+        public bool AddRol(Rol rol)
         {
             try
             {
                 using (conn)
                 {
                     //using parametirized query
-                    string sqlInserString =
-                    "INSERT INTO Rol (Nombre, Descripcion, Cedula_empleado) VALUES (@nombre, @descripcion, @ced_empleado)";
+                    string sqlInserString = "";
 
                     conn = new SqlConnection(connString);
 
                     command = new SqlCommand();
                     command.Connection = conn;
                     command.Connection.Open();
-                    command.CommandText = sqlInserString;
+                    
 
                     SqlParameter Nombreparam = new SqlParameter("@nombre", rol.Nombre);
                     SqlParameter Descripcionparam = new SqlParameter("@descripcion", rol.Descripcion);
-                    SqlParameter Cedula_empleadoparam = new SqlParameter("@cedula_empleado", rol.Cedula_empleado.ToString());
+                    SqlParameter Cedula_empleadoparam = new SqlParameter("@ced_empleado", rol.Ced_empleado);
                     
                     command.Parameters.AddRange(new SqlParameter[] { Nombreparam, Descripcionparam, Cedula_empleadoparam });
+                    if (rol.Ced_empleado == 0)
+                    {
+                        sqlInserString =
+                    "INSERT INTO Rol (Nombre, Descripcion, Ced_empleado) VALUES (@nombre, @descripcion, NULL)";
+                    }
+                    else
+                    {
+                        sqlInserString =
+                    "INSERT INTO Rol (Nombre, Descripcion, Ced_empleado) VALUES (@nombre, @descripcion, @ced_empleado)";
+                    }
+                    command.CommandText = sqlInserString;
                     command.ExecuteNonQuery();
                     command.Connection.Close();
-
+                    return true;
                 }
             }
             catch (Exception ex)
@@ -2290,14 +2380,14 @@ namespace DAL
         /// Database UPDATE - Update a Rol
         /// </summary>
         /// <param name="rol"></param>
-        public void UpdateRol(Rol rol)
+        public bool UpdateRol(Rol rol)
         {
             try
             {
                 using (conn)
                 {
                     string sqlUpdateString =
-                    "UPDATE Rol SET Nombre=@nombre, Descripcion=@descripcion WHERE Cedula_empleado=@cedula_empleado ";
+                    "UPDATE Rol SET Nombre=@nombre, Descripcion=@descripcion WHERE Ced_empleado=@ced_empleado ";
                     conn = new SqlConnection(connString);
 
                     command = new SqlCommand();
@@ -2307,11 +2397,29 @@ namespace DAL
 
                     SqlParameter Nombreparam = new SqlParameter("@nombre", rol.Nombre);
                     SqlParameter Descripcionparam = new SqlParameter("@descripcion", rol.Descripcion);
-                    SqlParameter Cedula_empleadoparam = new SqlParameter("@cedula_empleado", rol.Cedula_empleado.ToString());
+                    SqlParameter Cedula_empleadoparam = new SqlParameter("@ced_empleado", rol.Ced_empleado.ToString());
 
                     command.Parameters.AddRange(new SqlParameter[] { Nombreparam, Descripcionparam, Cedula_empleadoparam });
                     command.ExecuteNonQuery();
+                    #region  Revision de que se hizo bien
+                    string buscarRol = "SELECT * FROM Rol WHERE Ced_empleado=@ced_empleado";
+                    string rolEncontrado = "";
+                    command.CommandText = buscarRol;
+                    SqlDataReader reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        rolEncontrado = reader[0].ToString();
+                    }
                     command.Connection.Close();
+                    if (rolEncontrado != "")
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                    #endregion
                 }
             }
             catch (Exception ex)
@@ -2324,26 +2432,54 @@ namespace DAL
         /// Database DELETE - Delete a Rol
         /// </summary>
         /// <param name="cedula_empleado"></param>
-        public void DeleteRol(int cedula_empleado)
+        public bool DeleteRol(int cedula_empleado)
         {
             try
             {
                 using (conn)
                 {
                     string sqlDeleteString =
-                    "DELETE FROM Rol WHERE Cedula_empleado=@cedula_empleado ";
+                    "DELETE FROM Rol WHERE Ced_empleado=@ced_empleado ";
 
                     conn = new SqlConnection(connString);
 
                     command = new SqlCommand();
                     command.Connection = conn;
                     command.Connection.Open();
-                    command.CommandText = sqlDeleteString;
 
-                    SqlParameter cedula_empleadoparam = new SqlParameter("@cedula", cedula_empleado);
+                    SqlParameter cedula_empleadoparam = new SqlParameter("@ced_empleado", cedula_empleado);
                     command.Parameters.Add(cedula_empleadoparam);
+
+                    #region Borrar de sucursal
+                    string sqlBuscarRol = "SELECT Nombre FROM Rol WHERE Ced_empleado=@ced_empleado";
+                    command.CommandText = sqlBuscarRol;
+                    List<string> listaroles = new List<string>();
+                    SqlDataReader reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        string roltemp = reader[0].ToString();
+                        listaroles.Add(roltemp);
+                    }
+                    reader.Close();
+                    bool esAdmi = false;
+                    foreach (string rol in listaroles)
+                    {
+                        if (rol == "Administrador")
+                        {
+                            esAdmi = true;
+                        }
+                    }
+                    if (esAdmi)
+                    {
+                        string sqlBuscarSucursalAdmi = "UPDATE Sucursal SET Ced_administrador=NULL WHERE Ced_administrador=@ced_empleado";
+                        command.CommandText = sqlBuscarSucursalAdmi;
+                        command.ExecuteNonQuery();
+                    }
+                    #endregion
+                    command.CommandText = sqlDeleteString;
                     command.ExecuteNonQuery();
                     command.Connection.Close();
+                    return true;
                 }
             }
             catch (Exception ex)
@@ -2369,7 +2505,7 @@ namespace DAL
                 // and select the concerned employee
                 foreach (Rol rol in rolList)
                 {
-                    if (rol.Cedula_empleado == cedula_empleado)
+                    if (rol.Ced_empleado == cedula_empleado)
                     {
                         return rol;
                     }
@@ -2405,9 +2541,16 @@ namespace DAL
                     {
                         Rol rol = new Rol();
                         rol.Nombre = reader[0].ToString();
-                        rol.Descripcion = reader[0].ToString();
-                        string _empleado_temp = reader[0].ToString();
-                        rol.Cedula_empleado = int.Parse(_empleado_temp);
+                        rol.Descripcion = reader[1].ToString();
+                        string _empleado_temp = reader[2].ToString();
+                        if (_empleado_temp == "")
+                        {
+                            rol.Ced_empleado = 0;
+                        }
+                        else
+                        {
+                            rol.Ced_empleado = int.Parse(_empleado_temp);
+                        }
                         rolList.Add(rol);
                     }
                     command.Connection.Close();

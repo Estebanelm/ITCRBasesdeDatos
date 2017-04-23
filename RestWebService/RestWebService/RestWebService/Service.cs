@@ -26,7 +26,7 @@ namespace RestWebService
         private L3MDB.Proveedor prove;
         private L3MDB.Horas hor;
         private L3MDB.Rol rol;
-        private DAL.DAL dal;
+        private DAL.Operations dal;
         private string connString;
         private ErrorHandler.ErrorHandler errHandler;
 
@@ -45,7 +45,7 @@ namespace RestWebService
                 string url = Convert.ToString(context.Request.Url);
                 string request_instance = url.Split('/').Last<String>().Split('?')[0];
                 connString = Properties.Settings.Default.ConnectionString;
-                dal = new DAL.DAL(connString);
+                dal = new DAL.Operations(connString);
                 errHandler = new ErrorHandler.ErrorHandler();
 
                 //Handling CRUD
@@ -221,13 +221,13 @@ namespace RestWebService
                     else
                     {
                         string _horas = _horastemp;
-                        string _cedulatemp = context.Request["ced_empleado"];
-                        int _cedula = int.Parse(_cedulatemp);
+                        string _cedulaemptemp = context.Request["ced_empleado"];
+                        int _cedulaemp = int.Parse(_cedulaemptemp);
 
                         //HTTP Request Type - GET"
                         //Performing Operation - READ"
-                        hor = dal.GetHoras(_horas, _cedula);
-                        if (com == null)
+                        hor = dal.GetHoras(_horas, _cedulaemp);
+                        if (hor == null)
                             context.Response.Write(_horas + "No Horas Found" + _horastemp);
 
                         string serializedHoras = Serialize(hor);
@@ -597,7 +597,7 @@ namespace RestWebService
                     L3MDB.Empleado emp = new L3MDB.Empleado(context);
                     dal.UpdateEmpleado(emp);
                     //context.Response.Write("Employee Updtated Sucessfully");
-                    WriteResponse("ok");
+                    WriteResponse("oka");
                 }
                 #endregion
                 #region Sucursal
@@ -710,13 +710,12 @@ namespace RestWebService
                 if (request_instance == "sucursal")
                 {
                     string _codigo_temp = context.Request["codigo"];
-                    int _codigo = int.Parse(_codigo_temp);
-                    dal.DeleteSucursal(_codigo.ToString());
+                    dal.DeleteSucursal(_codigo_temp);
                     WriteResponse("ok");
                 }
                 #endregion
                 #region Categoria
-                if (request_instance == "Categoria")
+                if (request_instance == "categoria")
                 {
                     string _id_temp = context.Request["id"];
                     int _id = int.Parse(_id_temp);

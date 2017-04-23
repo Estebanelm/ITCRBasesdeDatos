@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace DAL.Properties {
+namespace Operations.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]

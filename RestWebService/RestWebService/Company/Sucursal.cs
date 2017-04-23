@@ -26,12 +26,12 @@ namespace L3MDB
             _Telefono = int.Parse(_Telefono_temp);
             _Direccion = context.Request["Direccion"];
             string _Ced_administrador_temp = context.Request["Ced_administrador"];
-            if (_Ced_administrador_temp == "")
+            if (_Ced_administrador_temp == null)
             {
                 _Ced_administrador = 0;
             }
             else
-                        {
+            {
                 _Ced_administrador = int.Parse(_Ced_administrador_temp);
             }
         }
