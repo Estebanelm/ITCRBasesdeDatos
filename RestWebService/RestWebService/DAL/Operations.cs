@@ -5,8 +5,9 @@ using System.Data.SqlClient;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Web;
 
-namespace DAL
+namespace Operations
 {
     public class Operations
     {
@@ -159,46 +160,6 @@ namespace DAL
 
                     SqlParameter cedulaparam = new SqlParameter("@cedula", cedula);
                     command.Parameters.Add(cedulaparam);
-                    #region Borrando de rol
-                    string String1 = "SELECT Nombre, Descripcion FROM Rol WHERE Ced_empleado=@cedula";
-                    string sqlDeletefromRol = "DELETE FROM Rol WHERE Ced_empleado=@cedula";
-                    string String2 = "";
-                    Int32 count = 0;
-                    command.CommandText = String1;
-                    string rolparacontar = "";
-                    string descripcionrol = "";
-                    List<string> listarolesydesc = new List<string>();
-                    List<Int32> listacuentas = new List<Int32>();
-                    SqlDataReader reader = command.ExecuteReader();
-                    while (reader.Read())
-                    {
-                        rolparacontar = reader[0].ToString();
-                        descripcionrol = reader[1].ToString();
-                        listarolesydesc.Add(rolparacontar);
-                        listarolesydesc.Add(descripcionrol);
-                    }
-                    reader.Close();
-                    if (listarolesydesc.Count != 0)
-                    {
-                        for (int i = 0; i < listarolesydesc.Count; i = i + 2)
-                        {
-                            String2 = "SELECT COUNT(Ced_empleado) FROM Rol WHERE Nombre=" + "'" + listarolesydesc[i] + "'";
-                            command.CommandText = String2;
-                            count = (Int32)command.ExecuteScalar();
-                            listacuentas.Add(count);
-                        }
-                    }
-                    command.CommandText = sqlDeletefromRol;
-                    command.ExecuteNonQuery();
-                    for (int i = 0; i < listarolesydesc.Count; i = i + 2)
-                    {
-                        if (listacuentas[i/2] == 1)
-                        {
-                            command.CommandText = "INSERT INTO Rol (Nombre, Descripcion) VALUES ( '" + listarolesydesc[i] + "' , '" + listarolesydesc[i+1] + "' )";
-                            command.ExecuteNonQuery();
-                        }
-                    }
-                    #endregion
                     #region Borrando de sucursal
                     string borradodeadmin = "UPDATE Sucursal SET Ced_administrador=NULL WHERE Ced_administrador=@cedula";
                     command.CommandText = borradodeadmin;
@@ -803,7 +764,7 @@ namespace DAL
                 {
                     //using parametirized query
                     string sqlInserString =
-                    "INSERT INTO Compra (Cedula_proveedor, Descripcion, Foto, Fecha_registro, Fecha_real, Codigo_sucursal) VALUES (@cedula_proveedor, @descripcion, @foto, @fecha_registro, @fecha_real, @codigo_sucursal)";
+                    "INSERT INTO Compra (Cedula_proveedor, Descripcion, Foto, Fecha_registro, Fecha_real, Codigo_sucursal, Precio_total) VALUES (@cedula_proveedor, @descripcion, @foto, @fecha_registro, @fecha_real, @codigo_sucursal, @precio_total)";
 
                     conn = new SqlConnection(connString);
 
@@ -818,8 +779,9 @@ namespace DAL
                     SqlParameter Fecha_registroparam = new SqlParameter("@fecha_registro", com.Fecha_Registro);
                     SqlParameter Fecha_realparam = new SqlParameter("@fecha_real", com.Fecha_real);
                     SqlParameter Codigo_sucursalparam = new SqlParameter("@codigo_sucursal", com.Codigo_sucursal);
+                    SqlParameter Precio_totalparam = new SqlParameter("@precio_total", com.Precio_total);
                     
-                    command.Parameters.AddRange(new SqlParameter[] { Cedula_proveedorparam, Descripcionparam, Fotoparam, Fecha_registroparam, Fecha_realparam, Codigo_sucursalparam });
+                    command.Parameters.AddRange(new SqlParameter[] { Cedula_proveedorparam, Descripcionparam, Fotoparam, Fecha_registroparam, Fecha_realparam, Codigo_sucursalparam, Precio_totalparam });
                     command.ExecuteNonQuery();
                     command.Connection.Close();
                     return true;
@@ -842,7 +804,7 @@ namespace DAL
                 using (conn)
                 {
                     string sqlUpdateString =
-                    "UPDATE Compra SET Cedula_proveedor=@cedula_proveedor, Descripcion=@descripcion, Foto=@foto, Fecha_registro=@fecha_registro, Fecha_real=@fecha_real, Codigo_sucursal=@codigo_sucursal WHERE Codigo=@codigo";
+                    "UPDATE Compra SET Cedula_proveedor=@cedula_proveedor, Descripcion=@descripcion, Foto=@foto, Fecha_registro=@fecha_registro, Fecha_real=@fecha_real, Codigo_sucursal=@codigo_sucursal, Precio_total=@precio_total WHERE Codigo=@codigo";
                     conn = new SqlConnection(connString);
 
                     command = new SqlCommand();
@@ -857,8 +819,9 @@ namespace DAL
                     SqlParameter Fecha_registroparam = new SqlParameter("@fecha_registro", com.Fecha_Registro);
                     SqlParameter Fecha_realparam = new SqlParameter("@fecha_real", com.Fecha_real);
                     SqlParameter Codigo_sucursalparam = new SqlParameter("@codigo_sucursal", com.Codigo_sucursal);
+                    SqlParameter Precio_totalparam = new SqlParameter("@precio_total", com.Precio_total);
 
-                    command.Parameters.AddRange(new SqlParameter[] { Codigoparam, Cedula_proveedorparam, Descripcionparam, Fotoparam, Fecha_registroparam, Fecha_realparam, Codigo_sucursalparam });
+                    command.Parameters.AddRange(new SqlParameter[] { Codigoparam, Cedula_proveedorparam, Descripcionparam, Fotoparam, Fecha_registroparam, Fecha_realparam, Codigo_sucursalparam, Precio_totalparam });
                     command.ExecuteNonQuery();
                     #region  Revision de que se hizo bien
                     string buscarCompra = "SELECT * FROM Compra WHERE Codigo=@codigo";
@@ -1002,10 +965,144 @@ namespace DAL
                         com.Fecha_Registro = reader[4].ToString();
                         com.Fecha_real = reader[5].ToString();
                         com.Codigo_sucursal = reader[6].ToString();
+                        string _Precio_total_temp = reader[8].ToString();
+                        if (_Precio_total_temp == "")
+                        {
+                            com.Precio_total = 0;
+                        }
+                        else
+                        {
+                            com.Precio_total = double.Parse(_Precio_total_temp);
+                        }
                         comList.Add(com);
                     }
                     command.Connection.Close();
                     return comList;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                err.ErrorMessage = ex.Message.ToString();
+                throw;
+            }
+        }
+        public bool AddCompraProductos(Compra com, HttpContext context)
+        {
+            try
+            {
+                using (conn)
+                {
+                    conn = new SqlConnection(connString);
+
+                    command = new SqlCommand();
+                    command.Connection = conn;
+                    command.Connection.Open();
+
+
+                    SqlParameter Codigo_sucursalparam = new SqlParameter("@codigo_sucursal", com.Codigo_sucursal);
+                    SqlParameter Cedula_proveedorparam = new SqlParameter("@cedula_proveedor", com.Cedula_proveedor);
+                    SqlParameter Descripcionparam = new SqlParameter("@descripcion", com.Descripcion);
+                    SqlParameter Fotoparam = new SqlParameter("@foto", com.Foto);
+                    SqlParameter Fecha_registroparam = new SqlParameter("@fecha_registro", com.Fecha_Registro);
+                    SqlParameter Fecha_realparam = new SqlParameter("@fecha_real", com.Fecha_real);
+
+                    command.Parameters.AddRange(new SqlParameter[] { Codigo_sucursalparam, Cedula_proveedorparam, Descripcionparam, Fotoparam, Fecha_registroparam, Fecha_realparam });
+
+                    string sqlAddCompra = "INSERT INTO Compra (Cedula_proveedor, Descripcion, Foto, Fecha_registro, Fecha_real, Codigo_sucursal) VALUES (@cedula_proveedor, @descripcion, @foto, @fecha_registro, @fecha_real, @codigo_sucursal)";
+                    command.CommandText = sqlAddCompra;
+                    command.ExecuteNonQuery();
+                    string sqlgetVentaID = "SELECT MAX(Codigo) FROM Compra ";
+                    command.CommandText = sqlgetVentaID;
+                    int CompraID = (Int32)command.ExecuteScalar();
+
+                    string listaproductosconcoma = context.Request["Productos"];
+                    string listaCantidadesComa = context.Request["Cantidad"];
+                    string[] listaProductosSep = listaproductosconcoma.Split(',');
+                    string[] listaCantidadesComaSep = listaCantidadesComa.Split(',');
+                    for (int i = 0; i < listaProductosSep.Length; i++)
+                    {
+                        string sqlGetPrecio = "SELECT Precio_venta, Cantidad FROM Producto WHERE Codigo_barras=" + listaProductosSep[i] + " AND Codigo_sucursal=@codigo_sucursal ";
+                        command.CommandText = sqlGetPrecio;
+                        SqlDataReader reader = command.ExecuteReader();
+                        reader.Read();
+                        string precioString = reader[0].ToString();
+                        string cantidadDisponibleString = reader[1].ToString();
+                        reader.Close();
+                        double precioProducto = double.Parse(precioString);
+                        string nuevoProductoenCompra = "INSERT INTO Productos_en_compra (Codigo_producto, Codigo_compra, Cantidad, Precio_total) VALUES (" + listaProductosSep[i] + ", " + CompraID.ToString() + ", " + listaCantidadesComaSep[i] + ", " + (int.Parse(listaCantidadesComaSep[i]) * precioProducto).ToString() + " ) ";
+                        command.CommandText = nuevoProductoenCompra;
+                        command.ExecuteNonQuery();
+                        int cantidadDisponible = int.Parse(cantidadDisponibleString);
+                        string sqlReduceCantidadProducto = "UPDATE Producto SET Cantidad=" + (cantidadDisponible + int.Parse(listaCantidadesComaSep[i])).ToString() + " WHERE Codigo_barras=" + listaProductosSep[i] + " AND Codigo_sucursal=@codigo_sucursal ";
+                        command.CommandText = sqlReduceCantidadProducto;
+                        command.ExecuteNonQuery();
+                    }
+                    string sqlgetCompraTotal = "SELECT SUM(Precio_total) FROM Productos_en_compra WHERE Codigo_compra=" + CompraID.ToString() + " ";
+                    command.CommandText = sqlgetCompraTotal;
+                    SqlDataReader reader2 = command.ExecuteReader();
+                    reader2.Read();
+                    string obtenerSuma = reader2[0].ToString();
+                    reader2.Close();
+                    double CompraTotal = double.Parse(obtenerSuma);
+                    string sqlUpdateCompra = "UPDATE Compra SET Precio_total=" + CompraTotal.ToString() + " WHERE Codigo=" + CompraID.ToString() + " ";
+                    command.CommandText = sqlUpdateCompra;
+                    command.ExecuteNonQuery();
+                    command.Connection.Close();
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                err.ErrorMessage = ex.Message.ToString();
+                throw;
+            }
+        }
+
+        public List<Gasto> GetGastos(string codigo_sucursal, string fecha_inicial, string fecha_final)
+        {
+            try
+            {
+                using (conn)
+                {
+                    List<Gasto> gastoList = new List<Gasto>();
+                    string sqlSelectString = "";
+                    conn = new SqlConnection(connString);
+                    if (codigo_sucursal == "")
+                    {
+                        sqlSelectString = "SELECT Compra.Fecha_real, Proveedor.Nombre, Compra.Descripcion, Compra.Precio_total " +
+                                          "FROM Compra " +
+                                          "LEFT JOIN Proveedor ON Compra.Cedula_proveedor=Proveedor.Cedula WHERE Fecha_real>'" + fecha_inicial + "' AND Fecha_real<'" + fecha_final + "' ORDER BY Compra.Fecha_real asc; ";
+                    }
+                    else
+                    {
+                        sqlSelectString = "SELECT Compra.Fecha_real, Proveedor.Nombre, Compra.Descripcion, Compra.Precio_total "+
+                                          "FROM Compra "+
+                                          "LEFT JOIN Proveedor ON Compra.Cedula_proveedor=Proveedor.Cedula WHERE Compra.Codigo_sucursal='" + codigo_sucursal + "' AND Fecha_real>'" + fecha_inicial + "' AND Fecha_real<'" + fecha_final + "' ORDER BY Compra.Fecha_real asc; ";
+                    }
+                    command = new SqlCommand(sqlSelectString, conn);
+                    command.Connection.Open();
+                    SqlDataReader reader = command.ExecuteReader();
+                    while (reader.Read())                    
+                    {
+                        Gasto gasto = new Gasto();
+                        gasto.Fecha = reader[0].ToString();
+                        gasto.Proveedor = reader[1].ToString();
+                        gasto.Descripcion = reader[2].ToString();
+                        string Precio_total_temp = reader[3].ToString();
+                        if (Precio_total_temp == "")
+                        {
+                            gasto.Monto = 0;
+                        }
+                        else
+                        {
+                            gasto.Monto = double.Parse(Precio_total_temp);
+                        }
+                        gastoList.Add(gasto);
+                    }
+                    reader.Close();
+                    command.Connection.Close();
+                    return gastoList;
                 }
 
             }
@@ -1029,7 +1126,7 @@ namespace DAL
                 {
                     //using parametirized query
                     string sqlInserString =
-                    "INSERT INTO Venta (Descuento, Precio_total, Codigo_sucursal, Cedula_cajero) VALUES (@descuento, @precio_total, @codigo_sucursal, @cedula_cajero)";
+                    "INSERT INTO Venta (Descuento, Precio_total, Codigo_sucursal, Cedula_cajero, Impuesto) VALUES (@descuento, @precio_total, @codigo_sucursal, @cedula_cajero, @impuesto)";
 
                     conn = new SqlConnection(connString);
 
@@ -1038,12 +1135,13 @@ namespace DAL
                     command.Connection.Open();
                     command.CommandText = sqlInserString;
 
-                    SqlParameter Descuentoparam = new SqlParameter("@descuento", ven.Descuento.ToString());
-                    SqlParameter Precio_totalparam = new SqlParameter("@precio_total", ven.Precio_total.ToString());
+                    SqlParameter Descuentoparam = new SqlParameter("@descuento", ven.Descuento);
+                    SqlParameter Precio_totalparam = new SqlParameter("@precio_total", ven.Precio_total);
                     SqlParameter Codigo_sucursalparam = new SqlParameter("@codigo_sucursal", ven.Codigo_sucursal);
-                    SqlParameter Cedula_cajeroparam = new SqlParameter("@cedula_cajero", ven.Cedula_cajero.ToString());
+                    SqlParameter Cedula_cajeroparam = new SqlParameter("@cedula_cajero", ven.Cedula_cajero);
+                    SqlParameter Impuestoparam = new SqlParameter("@impuesto", ven.Impuesto);
 
-                    command.Parameters.AddRange(new SqlParameter[] { Descuentoparam, Precio_totalparam, Codigo_sucursalparam, Cedula_cajeroparam });
+                    command.Parameters.AddRange(new SqlParameter[] { Descuentoparam, Precio_totalparam, Codigo_sucursalparam, Cedula_cajeroparam, Impuestoparam });
                     command.ExecuteNonQuery();
                     command.Connection.Close();
                     return true;
@@ -1067,7 +1165,7 @@ namespace DAL
                 using (conn)
                 {
                     string sqlUpdateString =
-                    "UPDATE Venta SET Descuento=@descuento, Precio_total=@precio_total, Codigo_sucursal=@codigo_sucursal, Cedula_cajero=@cedula_cajero WHERE Codigo=@codigo ";
+                    "UPDATE Venta SET Descuento=@descuento, Precio_total=@precio_total, Codigo_sucursal=@codigo_sucursal, Cedula_cajero=@cedula_cajero, Impuesto=@impuesto WHERE Codigo=@codigo ";
                     conn = new SqlConnection(connString);
 
                     command = new SqlCommand();
@@ -1075,13 +1173,13 @@ namespace DAL
                     command.Connection.Open();
                     command.CommandText = sqlUpdateString;
 
-                    SqlParameter Codigoparam = new SqlParameter("@codigo", ven.Codigo.ToString());
-                    SqlParameter Descuentoparam = new SqlParameter("@descuento", ven.Descuento.ToString());
-                    SqlParameter Precio_totalparam = new SqlParameter("@precio_total", ven.Precio_total.ToString());
+                    SqlParameter Descuentoparam = new SqlParameter("@descuento", ven.Descuento);
+                    SqlParameter Precio_totalparam = new SqlParameter("@precio_total", ven.Precio_total);
                     SqlParameter Codigo_sucursalparam = new SqlParameter("@codigo_sucursal", ven.Codigo_sucursal);
-                    SqlParameter Cedula_cajeroparam = new SqlParameter("@cedula_cajero", ven.Cedula_cajero.ToString());
+                    SqlParameter Cedula_cajeroparam = new SqlParameter("@cedula_cajero", ven.Cedula_cajero);
+                    SqlParameter Impuestoparam = new SqlParameter("@impuesto", ven.Impuesto);
 
-                    command.Parameters.AddRange(new SqlParameter[] { Codigoparam, Descuentoparam, Precio_totalparam, Codigo_sucursalparam, Cedula_cajeroparam });
+                    command.Parameters.AddRange(new SqlParameter[] { Descuentoparam, Precio_totalparam, Codigo_sucursalparam, Cedula_cajeroparam, Impuestoparam });
                     command.ExecuteNonQuery();
                     #region  Revision de que se hizo bien
                     string buscarVenta = "SELECT * FROM Venta WHERE Codigo=@codigo";
@@ -1225,12 +1323,104 @@ namespace DAL
                         {
                             ven.Cedula_cajero = int.Parse(_Cedula_cajero_temp);
                         }
+                        string _Impuesto_temp = reader[6].ToString();
+                        if (_Impuesto_temp == "")
+                        {
+                            ven.Impuesto = 0;
+                        }
+                        else
+                        {
+                            ven.Impuesto = double.Parse(_Impuesto_temp);
+                        }
                         venList.Add(ven);
                     }
                     command.Connection.Close();
                     return venList;
                 }
 
+            }
+            catch (Exception ex)
+            {
+                err.ErrorMessage = ex.Message.ToString();
+                throw;
+            }
+        }
+        public bool AddVentaProductos(HttpContext context)
+        {
+            try
+            {
+                using (conn)
+                {
+                    string sucursaltemp = context.Request["Codigo_sucursal"];
+                    string cajerotemp = context.Request["Cedula_cajero"];
+                    conn = new SqlConnection(connString);
+
+                    command = new SqlCommand();
+                    command.Connection = conn;
+                    command.Connection.Open();
+                    
+
+                    SqlParameter Codigo_sucursalparam = new SqlParameter("@codigo_sucursal", sucursaltemp);
+                    SqlParameter Cedula_cajeroparam = new SqlParameter("@cedula_cajero", int.Parse(cajerotemp));
+
+                    command.Parameters.AddRange(new SqlParameter[] { Codigo_sucursalparam, Cedula_cajeroparam });
+
+                    string sqlAddVenta = "INSERT INTO Venta (Codigo_sucursal, Cedula_cajero) VALUES (@codigo_sucursal, @cedula_cajero)";
+                    command.CommandText = sqlAddVenta;
+                    command.ExecuteNonQuery();
+                    string sqlgetVentaID = "SELECT MAX(Codigo) FROM Venta ";
+                    command.CommandText = sqlgetVentaID;
+                    int VentaID = (Int32)command.ExecuteScalar();
+
+                    string listaproductosconcoma = context.Request["Productos"];
+                    string listaCantidadesComa = context.Request["Cantidad"];
+                    string[] listaProductosSep = listaproductosconcoma.Split(',');
+                    string[] listaCantidadesComaSep = listaCantidadesComa.Split(',');
+                    for (int i = 0; i < listaProductosSep.Length; i++ )
+                    {
+                        string sqlGetPrecio = "SELECT Precio_venta, Cantidad FROM Producto WHERE Codigo_barras=" + listaProductosSep[i] + " AND Codigo_sucursal=@codigo_sucursal ";
+                        command.CommandText = sqlGetPrecio;
+                        SqlDataReader reader = command.ExecuteReader();
+                        reader.Read();
+                        string precioString = reader[0].ToString();
+                        string cantidadDisponibleString = reader[1].ToString();
+                        reader.Close();
+                        double precioProducto = double.Parse(precioString);
+                        string nuevoProductoenVenta = "INSERT INTO Productos_en_venta (Codigo_producto, Precio_individual, Cantidad, Codigo_venta, Precio_total) VALUES (" + listaProductosSep[i] + ", " + precioProducto.ToString() + ", " + listaCantidadesComaSep[i] + ", " + VentaID.ToString() + ", " + (int.Parse(listaCantidadesComaSep[i])*precioProducto).ToString() + " ) ";
+                        command.CommandText = nuevoProductoenVenta;
+                        command.ExecuteNonQuery();
+                        int cantidadDisponible = int.Parse(cantidadDisponibleString);
+                        string sqlReduceCantidadProducto = "UPDATE Producto SET Cantidad=" + (cantidadDisponible - int.Parse(listaCantidadesComaSep[i])).ToString() + " WHERE Codigo_barras=" + listaProductosSep[i] + " AND Codigo_sucursal=@codigo_sucursal ";
+                        command.CommandText = sqlReduceCantidadProducto;
+                        command.ExecuteNonQuery();
+                    }
+                    string sqlgetVentaTotal = "SELECT SUM(Precio_total) FROM Productos_en_venta WHERE Codigo_venta=" + VentaID.ToString() + " ";
+                    command.CommandText = sqlgetVentaTotal;
+                    SqlDataReader reader2 = command.ExecuteReader();
+                    reader2.Read();
+                    string obtenerSuma = reader2[0].ToString();
+                    reader2.Close();
+                    double VentaTotalSinDesc = double.Parse(obtenerSuma);
+                    string sqlgetDescuento = "SELECT Descuento, Impuesto FROM Producto WHERE Codigo_sucursal=@codigo_sucursal";
+                    command.CommandText = sqlgetDescuento;
+                    SqlDataReader reader1 = command.ExecuteReader();
+                    reader1.Read();
+                    string descuentoString = reader1[0].ToString();
+                    string impuestoString = reader1[1].ToString();
+                    reader1.Close();
+                    int Porcentajedescuento = int.Parse(descuentoString);
+                    double PorcentajedescuentoDecimales = Porcentajedescuento / 100.0;
+                    int Porcentajeimpuesto = int.Parse(impuestoString);
+                    double descuentoMoneda = VentaTotalSinDesc * (Porcentajedescuento / 100.0);
+                    double VentaTotalconDesc = VentaTotalSinDesc - descuentoMoneda;
+                    double impuestoMoneda = VentaTotalconDesc * (Porcentajeimpuesto/100.0);
+                    double Ventatotal = VentaTotalconDesc + impuestoMoneda;
+                    string sqlUpdateVenta = "UPDATE Venta SET Descuento=" + descuentoMoneda.ToString() + ", Precio_total=" + Ventatotal.ToString() + ", Impuesto=" + impuestoMoneda.ToString() + " WHERE Codigo=" + VentaID.ToString() + " ";
+                    command.CommandText = sqlUpdateVenta;
+                    command.ExecuteNonQuery();
+                    command.Connection.Close();
+                    return true;
+                }
             }
             catch (Exception ex)
             {
@@ -1704,6 +1894,100 @@ namespace DAL
                 throw;
             }
         }
+        public List<ReporteProductos> GetProductosTodos()
+        {
+            try
+            {
+                using (conn)
+                {
+                    List<ReporteProductos> repoproduList = new List<ReporteProductos>();
+
+                    conn = new SqlConnection(connString);
+
+                    string sqlSelectString = "SELECT DISTINCT(Codigo_barras) FROM Producto";
+                    command = new SqlCommand(sqlSelectString, conn);
+                    command.Connection.Open();
+                    List<string> listaCodigos = new List<string>();
+                    SqlDataReader reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        string codigo = reader[0].ToString();
+                        listaCodigos.Add(codigo);
+                    }
+                    reader.Close();
+                    foreach (string codigoBarra in listaCodigos)
+                    {
+                        ReporteProductos produ = new ReporteProductos();
+                        string sqlGetSum = "SELECT SUM(Precio_compra), SUM(Cantidad) FROM Producto WHERE Codigo_barras=" + codigoBarra + " ";
+                        command.CommandText = sqlGetSum;
+                        SqlDataReader reader1 = command.ExecuteReader();
+                        reader1.Read();
+                        string costotemp = reader1[0].ToString();
+                        produ.Costo = double.Parse(costotemp);
+                        string cantidadtemp = reader1[1].ToString();
+                        produ.Cantidad = int.Parse(cantidadtemp);
+                        reader1.Close();
+                        string sqlGetNombre = "SELECT Nombre FROM Producto WHERE Codigo_barras=" + codigoBarra + " ";
+                        command.CommandText = sqlGetNombre;
+                        SqlDataReader reader2 = command.ExecuteReader();
+                        reader2.Read();
+                        produ.Nombre = reader2[0].ToString();
+                        reader2.Close();
+                        repoproduList.Add(produ);
+                    }
+                    command.Connection.Close();
+                    return repoproduList;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                err.ErrorMessage = ex.Message.ToString();
+                throw;
+            }
+        }
+        public List<ReporteProductosSucursal> GetProductosporSucursal(string codigo_sucursal)
+        {
+            try
+            {
+                using (conn)
+                {
+                    List<ReporteProductosSucursal> repoproduList = new List<ReporteProductosSucursal>();
+
+                    string sqlGetProductos = "SELECT * FROM Producto WHERE Codigo_sucursal=@codigo_sucursal";
+                    conn = new SqlConnection(connString);
+
+                    command = new SqlCommand(sqlGetProductos, conn);
+                    
+                    SqlParameter Codigo_sucursalparam = new SqlParameter("@codigo_sucursal", codigo_sucursal);
+                    command.Parameters.AddRange(new SqlParameter[] { Codigo_sucursalparam });
+                    command.Connection.Open();
+                    SqlDataReader reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        ReporteProductosSucursal produ = new ReporteProductosSucursal();
+                        produ.Nombre = reader[2].ToString();
+                        produ.Descripcion = reader[3].ToString();
+                        string _Precio_compra_temp = reader[5].ToString();
+                        produ.Costo = double.Parse(_Precio_compra_temp);
+                        string _Cantidad_temp = reader[8].ToString();
+                        produ.Cantidad = int.Parse(_Cantidad_temp);
+                        if (produ.Cantidad != 0)
+                        {
+                            repoproduList.Add(produ);
+                        }
+                    }
+                    command.Connection.Close();
+                    return repoproduList;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                err.ErrorMessage = ex.Message.ToString();
+                throw;
+            }
+        }
         #endregion
         #region Operaciones sobre productos en compra
         /// <summary>
@@ -1897,6 +2181,15 @@ namespace DAL
                         producomp.Codigo_compra = int.Parse(_Codigo_compra_temp);
                         string _Cantidad_temp = reader[2].ToString();
                         producomp.Cantidad = int.Parse(_Cantidad_temp);
+                        string _Precio_total_temp = reader[3].ToString();
+                        if (_Precio_total_temp == "")
+                        {
+                            producomp.Precio_total = 0;
+                        }
+                        else
+                        {
+                            producomp.Precio_total = double.Parse(_Precio_total_temp);
+                        }
                         producompList.Add(producomp);
 
                     }
@@ -2107,6 +2400,15 @@ namespace DAL
                         produven.Cantidad = int.Parse(_Cantidad_temp);
                         string _Codigo_venta_temp = reader[3].ToString();
                         produven.Codigo_venta = int.Parse(_Codigo_venta_temp);
+                        string _Precio_total_temp = reader[4].ToString();
+                        if (_Precio_total_temp == "")
+                        {
+                            produven.Precio_total = 0;
+                        }
+                        else
+                        {
+                            produven.Precio_total = double.Parse(_Precio_total_temp);
+                        }
                         produvenList.Add(produven);
 
                     }
@@ -2351,19 +2653,9 @@ namespace DAL
 
                     SqlParameter Nombreparam = new SqlParameter("@nombre", rol.Nombre);
                     SqlParameter Descripcionparam = new SqlParameter("@descripcion", rol.Descripcion);
-                    SqlParameter Cedula_empleadoparam = new SqlParameter("@ced_empleado", rol.Ced_empleado);
-                    
-                    command.Parameters.AddRange(new SqlParameter[] { Nombreparam, Descripcionparam, Cedula_empleadoparam });
-                    if (rol.Ced_empleado == 0)
-                    {
-                        sqlInserString =
-                    "INSERT INTO Rol (Nombre, Descripcion, Ced_empleado) VALUES (@nombre, @descripcion, NULL)";
-                    }
-                    else
-                    {
-                        sqlInserString =
-                    "INSERT INTO Rol (Nombre, Descripcion, Ced_empleado) VALUES (@nombre, @descripcion, @ced_empleado)";
-                    }
+                    command.Parameters.AddRange(new SqlParameter[] { Nombreparam, Descripcionparam });
+                    sqlInserString =
+                    "INSERT INTO Rol (Nombre, Descripcion) VALUES (@nombre, @descripcion)";
                     command.CommandText = sqlInserString;
                     command.ExecuteNonQuery();
                     command.Connection.Close();
@@ -2387,7 +2679,7 @@ namespace DAL
                 using (conn)
                 {
                     string sqlUpdateString =
-                    "UPDATE Rol SET Nombre=@nombre, Descripcion=@descripcion WHERE Ced_empleado=@ced_empleado ";
+                    "UPDATE Rol SET Descripcion=@descripcion WHERE Nombre=@nombre";
                     conn = new SqlConnection(connString);
 
                     command = new SqlCommand();
@@ -2397,12 +2689,11 @@ namespace DAL
 
                     SqlParameter Nombreparam = new SqlParameter("@nombre", rol.Nombre);
                     SqlParameter Descripcionparam = new SqlParameter("@descripcion", rol.Descripcion);
-                    SqlParameter Cedula_empleadoparam = new SqlParameter("@ced_empleado", rol.Ced_empleado.ToString());
 
-                    command.Parameters.AddRange(new SqlParameter[] { Nombreparam, Descripcionparam, Cedula_empleadoparam });
+                    command.Parameters.AddRange(new SqlParameter[] { Nombreparam, Descripcionparam});
                     command.ExecuteNonQuery();
                     #region  Revision de que se hizo bien
-                    string buscarRol = "SELECT * FROM Rol WHERE Ced_empleado=@ced_empleado";
+                    string buscarRol = "SELECT * FROM Rol WHERE Nombre=@nombre";
                     string rolEncontrado = "";
                     command.CommandText = buscarRol;
                     SqlDataReader reader = command.ExecuteReader();
@@ -2432,14 +2723,14 @@ namespace DAL
         /// Database DELETE - Delete a Rol
         /// </summary>
         /// <param name="cedula_empleado"></param>
-        public bool DeleteRol(int cedula_empleado)
+        public bool DeleteRol(string nombre)
         {
             try
             {
                 using (conn)
                 {
                     string sqlDeleteString =
-                    "DELETE FROM Rol WHERE Ced_empleado=@ced_empleado ";
+                    "DELETE FROM Rol WHERE Nombre=@nombre ";
 
                     conn = new SqlConnection(connString);
 
@@ -2447,35 +2738,9 @@ namespace DAL
                     command.Connection = conn;
                     command.Connection.Open();
 
-                    SqlParameter cedula_empleadoparam = new SqlParameter("@ced_empleado", cedula_empleado);
-                    command.Parameters.Add(cedula_empleadoparam);
+                    SqlParameter nombreparam = new SqlParameter("@nombre", nombre);
+                    command.Parameters.Add(nombreparam);
 
-                    #region Borrar de sucursal
-                    string sqlBuscarRol = "SELECT Nombre FROM Rol WHERE Ced_empleado=@ced_empleado";
-                    command.CommandText = sqlBuscarRol;
-                    List<string> listaroles = new List<string>();
-                    SqlDataReader reader = command.ExecuteReader();
-                    while (reader.Read())
-                    {
-                        string roltemp = reader[0].ToString();
-                        listaroles.Add(roltemp);
-                    }
-                    reader.Close();
-                    bool esAdmi = false;
-                    foreach (string rol in listaroles)
-                    {
-                        if (rol == "Administrador")
-                        {
-                            esAdmi = true;
-                        }
-                    }
-                    if (esAdmi)
-                    {
-                        string sqlBuscarSucursalAdmi = "UPDATE Sucursal SET Ced_administrador=NULL WHERE Ced_administrador=@ced_empleado";
-                        command.CommandText = sqlBuscarSucursalAdmi;
-                        command.ExecuteNonQuery();
-                    }
-                    #endregion
                     command.CommandText = sqlDeleteString;
                     command.ExecuteNonQuery();
                     command.Connection.Close();
@@ -2491,9 +2756,9 @@ namespace DAL
         /// <summary>
         /// Database SELECT - Get an Rol
         /// </summary>
-        /// <param name="cedula_empleado"></param>
+        /// <param name="nombre"></param>
         /// <returns></returns>
-        public Rol GetRol(int cedula_empleado)
+        public Rol GetRol(string nombre)
         {
             try
             {
@@ -2505,7 +2770,7 @@ namespace DAL
                 // and select the concerned employee
                 foreach (Rol rol in rolList)
                 {
-                    if (rol.Ced_empleado == cedula_empleado)
+                    if (rol.Nombre == nombre)
                     {
                         return rol;
                     }
@@ -2542,15 +2807,6 @@ namespace DAL
                         Rol rol = new Rol();
                         rol.Nombre = reader[0].ToString();
                         rol.Descripcion = reader[1].ToString();
-                        string _empleado_temp = reader[2].ToString();
-                        if (_empleado_temp == "")
-                        {
-                            rol.Ced_empleado = 0;
-                        }
-                        else
-                        {
-                            rol.Ced_empleado = int.Parse(_empleado_temp);
-                        }
                         rolList.Add(rol);
                     }
                     command.Connection.Close();

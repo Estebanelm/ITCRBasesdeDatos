@@ -12,6 +12,7 @@ namespace L3MDB
         private int _Codigo_producto;
         private int _Codigo_compra;
         private int _Cantidad;
+        private double _Precio_total;
 
         public Productos_en_compra()
         { }
@@ -24,6 +25,15 @@ namespace L3MDB
             _Codigo_compra = int.Parse(_Codigo_compra_temp);
             string _Cantidad_temp = context.Request["Cantidad"];
             _Cantidad = int.Parse(_Cantidad_temp);
+            string _Precio_total_temp = context.Request["Precio_total"];
+            if (_Precio_total_temp == null)
+            {
+                _Precio_total = 0;
+            }
+            else
+            {
+                _Precio_total = double.Parse(_Precio_total_temp);
+            }
 
         }
 
@@ -63,6 +73,19 @@ namespace L3MDB
             set
             {
                 _Cantidad = value;
+            }
+        }
+
+        public double Precio_total
+        {
+            get
+            {
+                return _Precio_total;
+            }
+
+            set
+            {
+                _Precio_total = value;
             }
         }
     }

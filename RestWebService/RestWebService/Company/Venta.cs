@@ -15,6 +15,7 @@ namespace L3MDB
         private double _Precio_total;
         private string _Codigo_sucursal;
         private int _Cedula_cajero;
+        private double _Impuesto;
 
         public Venta()
         { }
@@ -37,6 +38,15 @@ namespace L3MDB
             _Codigo_sucursal = context.Request["codigo_sucursal"];
             string _Cedula_cajero_temp = context.Request["Cedula_cajero"];
             _Cedula_cajero = int.Parse(_Cedula_cajero_temp);
+            string _Impuesto_temp = context.Request["Impuesto"];
+            if (_Impuesto_temp == null)
+            {
+                _Impuesto = 0;
+            }
+            else
+            {
+                _Impuesto = double.Parse(_Impuesto_temp);
+            }
         }
 
         public int Codigo
@@ -101,6 +111,19 @@ namespace L3MDB
             set
             {
                 _Cedula_cajero = value;
+            }
+        }
+
+        public double Impuesto
+        {
+            get
+            {
+                return _Impuesto;
+            }
+
+            set
+            {
+                _Impuesto = value;
             }
         }
     }

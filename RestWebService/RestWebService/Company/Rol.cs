@@ -11,7 +11,6 @@ namespace L3MDB
 
         private string _nombre;
         private string _descripcion;
-        private int _ced_empleado;
 
         public Rol()
         { }
@@ -20,15 +19,6 @@ namespace L3MDB
         {
             _nombre = context.Request["Nombre"];
             _descripcion = context.Request["Descripcion"];
-            string _empleado_temp = context.Request["Ced_empleado"];
-            if (_empleado_temp == null)
-            {
-                _ced_empleado = 0;
-            }
-            else
-            {
-                _ced_empleado = int.Parse(_empleado_temp);
-            }
         }
 
         public string Nombre
@@ -57,17 +47,5 @@ namespace L3MDB
             }
         }
 
-        public int Ced_empleado
-        {
-            get
-            {
-                return _ced_empleado;
-            }
-
-            set
-            {
-                _ced_empleado = value;
-            }
-        }
     }
 }

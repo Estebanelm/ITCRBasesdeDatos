@@ -26,7 +26,7 @@ namespace RestWebService
         private L3MDB.Proveedor prove;
         private L3MDB.Horas hor;
         private L3MDB.Rol rol;
-        private DAL.Operations dal;
+        private Operations.Operations dal;
         private string connString;
         private ErrorHandler.ErrorHandler errHandler;
 
@@ -45,7 +45,7 @@ namespace RestWebService
                 string url = Convert.ToString(context.Request.Url);
                 string request_instance = url.Split('/').Last<String>().Split('?')[0];
                 connString = Properties.Settings.Default.ConnectionString;
-                dal = new DAL.Operations(connString);
+                dal = new Operations.Operations(connString);
                 errHandler = new ErrorHandler.ErrorHandler();
 
                 //Handling CRUD
@@ -53,21 +53,45 @@ namespace RestWebService
                 switch (context.Request.HttpMethod)
                 {
                     case "GET":
-                        //Perform READ Operation                   
-                        READ(context, request_instance);
-                        break;
+                        {
+                            //Perform READ Operation
+                            string isDelete = context.Request["Delete"];
+                            if (isDelete == null)
+                            {
+                                READ(context, request_instance);
+                                break;
+                            }
+                            else if (isDelete == "1")
+                            {
+                                DELETE(context, request_instance);
+                                break;
+                            }
+                            break;
+                        }
                     case "POST":
-                        //Perform CREATE Operation
-                        CREATE(context, request_instance);
-                        break;
-                    case "PUT":
+                        {
+                            //Perform CREATE Operation
+                            string isPut = context.Request["Put"];
+                            if (isPut == null)
+                            {
+                                CREATE(context, request_instance);
+                                break;
+                            }
+                            else if (isPut == "1")
+                            {
+                                UPDATE(context, request_instance);
+                                break;
+                            }
+                            break;
+                        }
+                    //case "PUT":
                         //Perform UPDATE Operation
-                        UPDATE(context, request_instance);
-                        break;
-                    case "DELETE":
+                        //UPDATE(context, request_instance);
+                        //break;
+                   // case "DELETE":
                         //Perform DELETE Operation
-                        DELETE(context, request_instance);
-                        break;
+                        //DELETE(context, request_instance);
+                        //break;
                     default:
                         break;
                 }
@@ -182,12 +206,46 @@ namespace RestWebService
                 else if (request_instance == "compra")
                 {
                     string _codigotemp = context.Request["codigo"];
+                    string _fecha_inicial = context.Request["fecha_inicial"];
+                    string _fecha_final = context.Request["fecha_final"];
+                    string _codigo_sucursal = context.Request["codigo_sucursal"];
                     if (_codigotemp == null)
                     {
-                        List<L3MDB.Compra> lista_compras = dal.GetCompras();
-                        string serializedList = Serialize(lista_compras);
-                        context.Response.ContentType = "text/xml";
-                        WriteResponse(serializedList);
+                        if (_codigo_sucursal == null)
+                        {
+                            if (_fecha_inicial != null && _fecha_final != null)
+                            {
+                                List<Operations.Gasto> lista_compras = dal.GetGastos("", _fecha_inicial, _fecha_final);
+                                string serializedList = Serialize(lista_compras);
+                                context.Response.ContentType = "text/xml";
+                                WriteResponse(serializedList);
+                            }
+                            else
+                            {
+                                List<L3MDB.Compra> lista_compras = dal.GetCompras();
+                                string serializedList = Serialize(lista_compras);
+                                context.Response.ContentType = "text/xml";
+                                WriteResponse(serializedList);
+                            }
+                        }
+                        else
+                        {
+                            if (_fecha_inicial != null && _fecha_final != null)
+                            {
+                                List<Operations.Gasto> lista_compras = dal.GetGastos(_codigo_sucursal, _fecha_inicial, _fecha_final);
+                                string serializedList = Serialize(lista_compras);
+                                context.Response.ContentType = "text/xml";
+                                WriteResponse(serializedList);
+                            }
+                            else
+                            {
+                                List<L3MDB.Compra> lista_compras = dal.GetCompras();
+                                string serializedList = Serialize(lista_compras);
+                                context.Response.ContentType = "text/xml";
+                                WriteResponse(serializedList);
+                            }
+                        }
+                        
 
                     }
                     else
@@ -240,17 +298,37 @@ namespace RestWebService
                 else if (request_instance == "producto")
                 {
                     string _codigo_barrastemp = context.Request["codigo_barras"];
+                    string _codigo_sucursaltemp = context.Request["codigo_sucursal"];
+                    string _todos = context.Request["Todos"];
                     if (_codigo_barrastemp == null)
                     {
-                        List<L3MDB.Producto> lista_productos = dal.GetProductos();
-                        string serializedList = Serialize(lista_productos);
-                        context.Response.ContentType = "text/xml";
-                        WriteResponse(serializedList);
-
+                        if (_codigo_sucursaltemp == null)
+                        {
+                            if (_todos == null)
+                            {
+                                List<L3MDB.Producto> lista_productos = dal.GetProductos();
+                                string serializedList = Serialize(lista_productos);
+                                context.Response.ContentType = "text/xml";
+                                WriteResponse(serializedList);
+                            }
+                            else
+                            {
+                                List<Operations.ReporteProductos> lista_productos = dal.GetProductosTodos();
+                                string serializedList = Serialize(lista_productos);
+                                context.Response.ContentType = "text/xml";
+                                WriteResponse(serializedList);
+                            }
+                        }
+                        else
+                        {
+                            List<Operations.ReporteProductosSucursal> lista_productos = dal.GetProductosporSucursal(_codigo_sucursaltemp);
+                            string serializedList = Serialize(lista_productos);
+                            context.Response.ContentType = "text/xml";
+                            WriteResponse(serializedList);
+                        }
                     }
                     else
                     {
-                        string _codigo_sucursaltemp = context.Request["codigo_sucursal"];
                         int _codigo_barras = int.Parse(_codigo_barrastemp);
 
                         //HTTP Request Type - GET"
@@ -356,8 +434,8 @@ namespace RestWebService
                 #region Rol
                 else if (request_instance == "rol")
                 {
-                    string _ced_empleadotemp = context.Request["ced_empleado"];
-                    if (_ced_empleadotemp == null)
+                    string nombretemp = context.Request["nombre"];
+                    if (nombretemp == null)
                     {
                         List<L3MDB.Rol> lista_roles = dal.GetRoles();
                         string serializedList = Serialize(lista_roles);
@@ -367,13 +445,13 @@ namespace RestWebService
                     }
                     else
                     {
-                        int _ced_empleado = int.Parse(_ced_empleadotemp);
+                        string nombre = nombretemp;
 
                         //HTTP Request Type - GET"
                         //Performing Operation - READ"
-                        rol = dal.GetRol(_ced_empleado);
+                        rol = dal.GetRol(nombre);
                         if (rol == null)
-                            context.Response.Write(_ced_empleado + "No Producto Found" + _ced_empleadotemp);
+                            context.Response.Write(nombre + "No Producto Found" + nombretemp);
 
                         string serializedRol = Serialize(rol);
                         context.Response.ContentType = "text/xml";
@@ -474,10 +552,18 @@ namespace RestWebService
                 #region Compra
                 else if (request_instance == "compra")
                 {
-                    L3MDB.Compra com = new L3MDB.Compra(context);
-                    //L3MDB.Empleado emp = Deserialize(PostData);                
-                    // Insert data in database
-                    dal.AddCompra(com);
+                    if (context.Request["productos"] == null || context.Request["cantidad"] == null)
+                    {
+                        L3MDB.Compra com = new L3MDB.Compra(context);
+                        //L3MDB.Empleado emp = Deserialize(PostData);                
+                        // Insert data in database
+                        dal.AddCompra(com);
+                    }
+                    else
+                    {
+                        L3MDB.Compra com = new L3MDB.Compra(context);
+                        dal.AddCompraProductos(com, context);
+                    }
                 }
                 #endregion
                 #region Horas
@@ -537,10 +623,17 @@ namespace RestWebService
                 #region Venta
                 else if (request_instance == "venta")
                 {
-                    L3MDB.Venta ven = new L3MDB.Venta(context);
-                    //L3MDB.Empleado emp = Deserialize(PostData);                
-                    // Insert data in database
-                    dal.AddVenta(ven);
+                    if (context.Request["productos"] == null || context.Request["cantidad"] == null)
+                    {
+                        L3MDB.Venta ven = new L3MDB.Venta(context);
+                        //L3MDB.Empleado emp = Deserialize(PostData);                
+                        // Insert data in database
+                        dal.AddVenta(ven);
+                    }
+                    else
+                    {
+                        dal.AddVentaProductos(context);
+                    }
                 }
                 #endregion               
             }
@@ -786,9 +879,8 @@ namespace RestWebService
                 #region Rol
                 if (request_instance == "rol")
                 {
-                    string _ced_empleado_temp = context.Request["ced_empleado"];
-                    int _ced_empleado = int.Parse(_ced_empleado_temp);
-                    dal.DeleteRol(_ced_empleado);
+                    string nombre = context.Request["nombre"];
+                    dal.DeleteRol(nombre);
                     WriteResponse("ok");
                 }
                 #endregion

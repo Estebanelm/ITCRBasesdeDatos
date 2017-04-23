@@ -16,6 +16,7 @@ namespace L3MDB
         private string _Fecha_Registro;
         private string _Fecha_real;
         private string _Codigo_sucursal;
+        private double _Precio_total;
 
         public Compra()
         { }
@@ -38,6 +39,15 @@ namespace L3MDB
             _Fecha_Registro = context.Request["Fecha_registro"];
             _Fecha_real = context.Request["Fecha_real"];
             _Codigo_sucursal = context.Request["Codigo_sucursal"];
+            string _Precio_total_temp = context.Request["Precio_total"];
+            if (_Precio_total_temp == null)
+            {
+                _Precio_total = 0;
+            }
+            else
+            {
+                _Precio_total = double.Parse(_Precio_total_temp);
+            }
 
         }
 
@@ -129,6 +139,19 @@ namespace L3MDB
             set
             {
                 _Codigo_sucursal = value;
+            }
+        }
+
+        public double Precio_total
+        {
+            get
+            {
+                return _Precio_total;
+            }
+
+            set
+            {
+                _Precio_total = value;
             }
         }
     }

@@ -17,7 +17,7 @@
 --drop table Producto
 
 --Insert into Productos_en_compra (Codigo_producto,Codigo_compra,Cantidad) values (123456, 1, 3)
---insert into Productos_en_venta (Codigo_producto,Precio_individual,Cantidad,Codigo_venta) values (123456, 1500.00, 4, 2)
+--insert into Productos_en_venta (Codigo_producto,Precio_individual,Cantidad,Codigo_venta) values (123456789, 1500.00, 4, 1)
 
 --insert into Sucursal (Codigo,Nombre,Telefono,Direccion) values ('SJ01','San Jose Central', 24987564, 'Frente al Mercado Central')
 --insert into Sucursal (Codigo,Nombre,Telefono,Direccion) values ('SJ02','Tibas', 45698765, 'En Tibas, a la par del estadio')
@@ -27,4 +27,3 @@
 --insert into Sucursal (Codigo,Nombre,Telefono,Direccion) values ('AJ04','Palmares', 47851265, 'Dentro del Centro Comercial Pancha, local 32')
 --insert into Sucursal (Codigo,Nombre,Telefono,Direccion) values ('HD01','Heredia Central', 65874125, 'Heredia Centro, al lado de la Muni')
 --insert into Sucursal (Codigo,Nombre,Telefono,Direccion) values ('HD03','Santo Domingo', 98567424, 'Santo Domingo, frente al cole')
-

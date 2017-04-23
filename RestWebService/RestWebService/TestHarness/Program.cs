@@ -7,7 +7,7 @@ using System.Net;
 using System.IO;
 using System.Xml.Serialization;
 using L3MDB;
-using DAL;
+using Operations;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,7 +23,7 @@ namespace TestHarness
             Empleado emp = new Empleado();
             Sucursal suc = new Sucursal();
             string strConnString = "Data Source=LAPTOP-2E6BHQDP\\SQLEXPRESS;Initial Catalog=L3MDB;Integrated Security=True";
-            DAL.Operations dal = new DAL.Operations(strConnString);
+            Operations.Operations dal = new Operations.Operations(strConnString);
 
             #region "Test database Functionalities"
 
@@ -35,6 +35,8 @@ namespace TestHarness
             //newcat.Descripcion = "Comida para perro";
             //dal.AddCategoria(newcat);
             //dal.GetVentas
+            double descuento = 13 / 100.0;
+            Console.WriteLine(descuento);
             dal.GetHoras("17-14", 115250560);
             //TestSelectCommand(suc, dal);
             //TestInsertCommand(emp, dal);
@@ -54,14 +56,14 @@ namespace TestHarness
             Console.ReadLine();
         }
 
-        private static void TestSelectCommand(Sucursal emp, DAL.Operations dal)
+        private static void TestSelectCommand(Sucursal emp, Operations.Operations dal)
         {
             Console.WriteLine("Testing Select command");
             emp = dal.GetSucursal("SJ45");
             Console.WriteLine(emp.Nombre);
         }
 
-        private static void TestInsertCommand(Empleado emp, DAL.Operations dal)
+        private static void TestInsertCommand(Empleado emp, Operations.Operations dal)
         {
             Console.WriteLine("Testing Insert Command");
             emp = new Empleado();
@@ -79,7 +81,7 @@ namespace TestHarness
             PrintEmployeeInformation(newEmp);           
         }
 
-        private static void TestUpdateCommand(Empleado emp, DAL.Operations dal)
+        private static void TestUpdateCommand(Empleado emp, Operations.Operations dal)
         {
             Console.WriteLine("Testing Update Command");
             emp = new Empleado();
@@ -91,7 +93,7 @@ namespace TestHarness
             PrintEmployeeInformation(emp);
         }
 
-        private static void TestDeleteCommand(Empleado emp, DAL.Operations dal)
+        private static void TestDeleteCommand(Empleado emp, Operations.Operations dal)
         {
             Console.WriteLine("Testing Delete Command");
             dal.DeleteEmpleado(1110);
