@@ -1442,7 +1442,7 @@ namespace Operations
                 {
                     //using parametirized query
                     string sqlInserString =
-                    "INSERT INTO Horas (ID_semana, Horas_ordinarias, Horas_extras, Ced_empleado) VALUES (@id_semana, @horas_ordinarias, @horas_extra, @ced_empleado)";
+                    "INSERT INTO Horas (ID_semana, Horas_ordinarias, Horas_extras, Ced_empleado) VALUES (@id_semana, @horas_ordinarias, @horas_extras, @ced_empleado)";
 
                     conn = new SqlConnection(connString);
 
@@ -1452,10 +1452,10 @@ namespace Operations
                     command.CommandText = sqlInserString;
 
                     SqlParameter ID_semanaparam = new SqlParameter("@id_semana", hor.ID_semana);
-                    SqlParameter Horas_ordinariasparam = new SqlParameter("@horas_ordinarias", hor.Horas_ordinarias);
-                    SqlParameter Horas_extraparam = new SqlParameter("@horas_extras", hor.Horas_extras);
-                    SqlParameter Ced_empleadoparam = new SqlParameter("@ced_empleado", hor.Ced_empleado);
-                    
+                    SqlParameter Horas_ordinariasparam = new SqlParameter("@horas_ordinarias", hor.Horas_ordinarias.ToString());
+                    SqlParameter Horas_extraparam = new SqlParameter("@horas_extras", hor.Horas_extras.ToString());
+                    SqlParameter Ced_empleadoparam = new SqlParameter("@ced_empleado", hor.Ced_empleado.ToString());
+
                     command.Parameters.AddRange(new SqlParameter[] { ID_semanaparam, Horas_ordinariasparam, Horas_extraparam, Ced_empleadoparam });
                     command.ExecuteNonQuery();
                     command.Connection.Close();
@@ -1562,10 +1562,11 @@ namespace Operations
         /// </summary>
         /// <param name="semana"></param>
         /// <returns></returns>
-        public Horas GetHoras(string semana, int ced_empleado)
+        public List<Horas> GetHoras(string semana)
         {
             try
             {
+                List<Horas> listahorasSemana = new List<Horas>();
                 if (horList == null)
                 {
                     horList = GetHorases();
@@ -1574,12 +1575,12 @@ namespace Operations
                 // and select the concerned employee
                 foreach (Horas hor in horList)
                 {
-                    if (hor.ID_semana == semana && hor.Ced_empleado == ced_empleado)
+                    if (hor.ID_semana == semana)
                     {
-                        return hor;
+                        listahorasSemana.Add(hor);
                     }
                 }
-                return null;
+                return listahorasSemana;
             }
             catch (Exception ex)
             {

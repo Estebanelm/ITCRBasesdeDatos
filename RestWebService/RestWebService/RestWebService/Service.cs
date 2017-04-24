@@ -24,7 +24,6 @@ namespace RestWebService
         private L3MDB.Productos_en_compra producom;
         private L3MDB.Productos_en_venta produven;
         private L3MDB.Proveedor prove;
-        private L3MDB.Horas hor;
         private L3MDB.Rol rol;
         private Operations.Operations dal;
         private string connString;
@@ -279,16 +278,14 @@ namespace RestWebService
                     else
                     {
                         string _horas = _horastemp;
-                        string _cedulaemptemp = context.Request["ced_empleado"];
-                        int _cedulaemp = int.Parse(_cedulaemptemp);
-
+                        List<L3MDB.Horas> listaHorasSemana = new List<L3MDB.Horas>();
                         //HTTP Request Type - GET"
                         //Performing Operation - READ"
-                        hor = dal.GetHoras(_horas, _cedulaemp);
-                        if (hor == null)
+                        listaHorasSemana = dal.GetHoras(_horas);
+                        if (listaHorasSemana.Count == 0)
                             context.Response.Write(_horas + "No Horas Found" + _horastemp);
 
-                        string serializedHoras = Serialize(hor);
+                        string serializedHoras = Serialize(listaHorasSemana);
                         context.Response.ContentType = "text/xml";
                         WriteResponse(serializedHoras);
                     }

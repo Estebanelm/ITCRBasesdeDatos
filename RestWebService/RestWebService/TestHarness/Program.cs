@@ -37,7 +37,7 @@ namespace TestHarness
             //dal.GetVentas
             double descuento = 13 / 100.0;
             Console.WriteLine(descuento);
-            dal.GetHoras("17-14", 115250560);
+            //dal.GetHoras("17-14", 115250560);
             //TestSelectCommand(suc, dal);
             //TestInsertCommand(emp, dal);
             //TestUpdateCommand(emp, dal);

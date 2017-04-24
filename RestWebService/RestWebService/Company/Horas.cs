@@ -21,7 +21,14 @@ namespace L3MDB
         {
             _ID_semana = context.Request["ID_semana"];
             string _horas_ordinarias_temp = context.Request["Horas_ordinarias"];
-            _horas_ordinarias = int.Parse(_horas_ordinarias_temp);
+            if (_horas_ordinarias_temp == null)
+            {
+                _horas_ordinarias = 0;
+            }
+            else
+            {
+                _horas_ordinarias = int.Parse(_horas_ordinarias_temp);
+            }
             string _horas_extras_temp = context.Request["Horas_extras"];
             if (_horas_extras_temp == null)
             {
