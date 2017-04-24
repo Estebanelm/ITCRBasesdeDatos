@@ -25,6 +25,6 @@
 --FROM Compra
 --LEFT JOIN Proveedor ON Compra.Cedula_proveedor = Proveedor.Cedula where Compra.Codigo_sucursal='SJ45' AND Fecha_real>'2017-03-20' order by compra.Fecha_real asc;
 
-
+select * from horas
 select * from compra
 select * from proveedor
