@@ -15,6 +15,7 @@ namespace RestWebService
     {
         #region Private Members
 
+        //Estos miembros están presentes para evitar repetición de declaracione dentro de las funciones
         private L3MDB.Empleado emp;
         private L3MDB.Sucursal suc;
         private L3MDB.Categoria cat;
@@ -26,7 +27,7 @@ namespace RestWebService
         private L3MDB.Proveedor prove;
         private L3MDB.Rol rol;
         private Operations.Operations operations;
-        private string connString;
+        private string connString; //string con los parámetros de conexión hacia la base de datos
         private ErrorHandler.ErrorHandler errHandler;
 
         #endregion
@@ -37,15 +38,17 @@ namespace RestWebService
             get { throw new NotImplementedException(); }
         }
 
+        //Método que procesa los request. Este método debe de existir para poder recibir
+        //las solicitudes desde los clientes.
         void IHttpHandler.ProcessRequest(HttpContext context)
         {
             try
             {                
                 string url = Convert.ToString(context.Request.Url);
-                string request_instance = url.Split('/').Last<String>().Split('?')[0];
+                string request_instance = url.Split('/').Last<String>().Split('?')[0]; //instance de la solicitud, ya sea empleado, sucursal, etc.
                 connString = Properties.Settings.Default.ConnectionString;
-                operations = new Operations.Operations(connString);
-                errHandler = new ErrorHandler.ErrorHandler();
+                operations = new Operations.Operations(connString); //estas variables se deben inicializar acá para que se realice
+                errHandler = new ErrorHandler.ErrorHandler();       //cada vez que el cliente hace una solicitud
 
                 //Handling CRUD
 
@@ -53,14 +56,13 @@ namespace RestWebService
                 {
                     case "GET":
                         {
-                            //Perform READ Operation
-                            string isDelete = context.Request["Delete"];
-                            if (isDelete == null)
+                            string isDelete = context.Request["Delete"]; //determina si existe el parámetro delete
+                            if (isDelete == null)                        // ya que no hay soporte a delete en chrome
                             {
-                                READ(context, request_instance);
+                                READ(context, request_instance);    //si no es delete, haga el read
                                 break;
                             }
-                            else if (isDelete == "1")
+                            else if (isDelete == "1")                //si es delete, hace el borrado
                             {
                                 DELETE(context, request_instance);
                                 break;
@@ -70,19 +72,21 @@ namespace RestWebService
                     case "POST":
                         {
                             //Perform CREATE Operation
-                            string isPut = context.Request["Put"];
-                            if (isPut == null)
+                            string isPut = context.Request["Put"];//determina si existe el parámetro put
+                            if (isPut == null)                    //debido a la falta de soporte por parte de Chrome
                             {
-                                CREATE(context, request_instance);
+                                CREATE(context, request_instance); //hacer create porque es post
                                 break;
                             }
                             else if (isPut == "1")
                             {
-                                UPDATE(context, request_instance);
+                                UPDATE(context, request_instance); //hacer update porque es put
                                 break;
                             }
                             break;
                         }
+                        //Casos legacy, ya que el soporte en chrome no existe para delete y put.
+                        //Estos metodos funcionan en Internet Explorer.
                     //case "PUT":
                         //Perform UPDATE Operation
                         //UPDATE(context, request_instance);
@@ -109,19 +113,24 @@ namespace RestWebService
         #region CRUD Functions
         /// <summary>
         /// GET Operation
+        /// Todos las regiones marcan un if que va a permitir determinar cuál operación hacer dentro de la base de datos.
+        /// De esta manera, todas tienen una funcionalidad casi igual y el código es muy parecido entre ellos, solamente
+        /// elige entre el método a llamar en la clase Operations.
         /// </summary>
         /// <param name="context"></param>
+        /// <param name="request_instance"></param>
         private void READ( HttpContext context, string request_instance)
         {
             //HTTP Request - //http://server.com/virtual directory/empleado?id={id}
             //http://localhost/RestWebService/empleado
+            //Formato de la forma de hacer el request
             try
             {
                 #region Empleado
                 if (request_instance == "empleado")
                 {
-                    string _cedula_temp = context.Request["cedula"];
-                    if (_cedula_temp == null)
+                    string _cedula_temp = context.Request["cedula"]; //obtiene el valor del parámetro cedula
+                    if (_cedula_temp == null) //si no hay parámetro, obtener todos los empleados
                     {
                         List<L3MDB.Empleado> lista_empleados = operations.GetEmpleados();
                         string serializedList = Serialize(lista_empleados);
@@ -129,15 +138,12 @@ namespace RestWebService
                         WriteResponse(serializedList);
 
                     }
-                    else
+                    else //si hay parámetro cedula, obtener solo 1 empleado
                     {
                         int _cedula = int.Parse(_cedula_temp);
-
-                        //HTTP Request Type - GET"
-                        //Performing Operation - READ"
                         emp = operations.GetEmpleado(_cedula);
                         if (emp == null)
-                            context.Response.Write(_cedula + "No Empleado Found" + context.Request["cedula"]);
+                            context.Response.Write("No Empleado Found" + context.Request["cedula"]);
 
                         string serializedEmpleado = Serialize(emp);
                         context.Response.ContentType = "text/xml";
@@ -160,9 +166,6 @@ namespace RestWebService
                     else
                     {
                         string _codigo = _codigo_temp;
-
-                        //HTTP Request Type - GET"
-                        //Performing Operation - READ"
                         suc = operations.GetSucursal(_codigo);
                         if (suc == null)
                             context.Response.Write(_codigo + "No Sucursal Found" + context.Request["codigo"]);
@@ -494,8 +497,11 @@ namespace RestWebService
         }
         /// <summary>
         /// POST Operation
+        /// Esta función consiste de los if que determinan cuál método llamar en la clase Operations.
+        /// Solamente se evaluará lo que el cliente solicita y se procede a llamar la función adecuada.
         /// </summary>
         /// <param name="context"></param>
+        /// <param name="request_instance"></param>
         private void CREATE(HttpContext context, string request_instance)
         {
             try
@@ -503,28 +509,7 @@ namespace RestWebService
                 #region Empleado
                 if (request_instance == "empleado")
                 {
-
-                    // HTTP POST sends name/value pairs to a web server
-                    // data is sent in message body
-
-                    //Example for this specific project
-                    /*POST /RESTWebService/empleado HTTP/1.1
-                      HOST: localhost
-                      content-length: 163
-                      content-type: application/x-www-form-urlencoded
-
-                      Nombre=Esteban&Pri_apellido=Bambos&Seg_apellido=Bembas&Cedula=111111111&Fecha_inicio=01/01/1994&Salario_por_hora=15000.55&Fecha_nacimiento=01/01/1900&Sucursal=SJ45
-                    */
-                    // Extract the content of the Request and make a employee class
-                    // The message body is posted as bytes. read the bytes
-                    //byte[] PostData = context.Request.BinaryRead(context.Request.ContentLength);
-                    //context.Request.QueryString.ToString();
-                    //Convert the bytes to string using Encoding class
-                    //string str = Encoding.UTF8.GetString(PostData);
-                    // deserialize xml into employee class
                     L3MDB.Empleado emp = new L3MDB.Empleado(context);
-                    //L3MDB.Empleado emp = Deserialize(PostData);                
-                    // Insert data in database
                     operations.AddEmpleado(emp);
                 }
                 #endregion
@@ -644,41 +629,20 @@ namespace RestWebService
         }
         /// <summary>
         /// PUT Operation
+        /// Al igual que en post, solamente se va a determinar el método a llamar en la clase Operations.
         /// </summary>
         /// <param name="context"></param>
+        /// <param name="request_instance"></param>
         private void UPDATE(HttpContext context, string request_instance)
-        {
-            //The PUT Method
-
-            // The PUT method requests that the enclosed entity be stored
-            // under the supplied URL. If the URL refers to an already 
-            // existing resource, the enclosed entity should be considered
-            // as a modified version of the one residing on the origin server. 
-            // If the URL does not point to an existing resource, and that 
-            // URL is capable of being defined as a new resource by the 
-            // requesting user agent, the origin server can create the 
-            // resource with that URL.
-            // If the request passes through a cache and the URL identifies 
-            // one or more currently cached entities, those entries should 
-            // be treated as stale. Responses to this method are not cacheable.
-            
+        {           
             try
             {
                 #region Empleado
                 if (request_instance == "empleado")
                 {
-                    // context.Response.Write("Update");
-                    // Read the data in the message body of the PUT method
-                    // The code expects the employee class as data to be updated
-
-                    //byte[] PUTRequestByte = context.Request.BinaryRead(context.Request.ContentLength);
-                    //context.Response.Write(PUTRequestByte);
-
-                    // Deserialize Employee
-                    //L3MDB.Empleado emp = Deserialize(PUTRequestByte);
                     L3MDB.Empleado emp = new L3MDB.Empleado(context);
                     operations.UpdateEmpleado(emp);
-                    //context.Response.Write("Employee Updtated Sucessfully");
+                    context.Response.Write("Employee Updtated Sucessfully");
                     WriteResponse("oka");
                 }
                 #endregion
@@ -796,6 +760,7 @@ namespace RestWebService
         }
         /// <summary>
         /// DELETE Operation
+        /// Tiene la misma función que el método Get, por lo que funciona de la misma forma
         /// </summary>
         /// <param name="context"></param>
         private void DELETE(HttpContext context, string request_instance)
@@ -919,7 +884,7 @@ namespace RestWebService
 
         #region Utility Functions
         /// <summary>
-        /// Method - Writes into the Response stream
+        /// Devuelve un mensaje al cliente
         /// </summary>
         /// <param name="strMessage"></param>
         private static void WriteResponse(string strMessage)
@@ -928,33 +893,9 @@ namespace RestWebService
         }
 
         /// <summary>
-        /// Method - Deserialize Class XML
+        /// Convierte una clase en un XML
         /// </summary>
-        /// <param name="xmlByteData"></param>
-        /// <returns></returns>
-        private L3MDB.Empleado Deserialize(byte[] xmlByteData)
-        {
-            try
-            {
-                XmlSerializer ds = new XmlSerializer(typeof(L3MDB.Empleado));
-                MemoryStream memoryStream = new MemoryStream(xmlByteData);
-                L3MDB.Empleado emp = new L3MDB.Empleado();
-                emp = (L3MDB.Empleado)ds.Deserialize(memoryStream);
-                return emp;
-            }
-            catch (Exception ex)
-            {
-                
-                errHandler.ErrorMessage = operations.GetException();
-                errHandler.ErrorMessage = ex.Message.ToString();
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Method - Serialize Class to XML
-        /// </summary>
-        /// <param name="emp"></param>
+        /// <param name="obj"></param>
         /// <returns></returns>
         private String Serialize<T>(T obj)
         {

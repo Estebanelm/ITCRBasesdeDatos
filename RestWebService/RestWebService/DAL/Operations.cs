@@ -12,6 +12,7 @@ namespace Operations
     public class Operations
     {
         #region Variables internas
+        //TOdas estas variables son declaradas aquí para evitar hacerlo en todos los métodos que las ocupan
         private SqlConnection conn;
         private static string connString;
         private SqlCommand command;       
@@ -45,9 +46,6 @@ namespace Operations
             {
                 using (conn)
                 {
-                    
-                    
-                    
                     //using parametirized query
                     string sqlInserString =
                     "INSERT INTO Empleado (Nombre, Pri_apellido, Seg_apellido, Cedula, Fecha_inicio, Salario_por_hora, Fecha_nacimiento, Codigo_sucursal, Contrasena) VALUES (@nombre, @pri_apellido, @seg_apellido, @cedula, @fecha_inicio, @salario_por_hora, @fecha_nacimiento, @codigo_sucursal, @contrasena)";
@@ -142,7 +140,7 @@ namespace Operations
        /// <summary>
        /// Database DELETE - Delete an Employee
        /// </summary>
-       /// <param name="iD"></param>
+       /// <param name="cedula"></param>
         public bool DeleteEmpleado(int cedula)
         {
             try
