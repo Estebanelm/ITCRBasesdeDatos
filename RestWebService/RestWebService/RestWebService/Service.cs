@@ -25,7 +25,7 @@ namespace RestWebService
         private L3MDB.Productos_en_venta produven;
         private L3MDB.Proveedor prove;
         private L3MDB.Rol rol;
-        private Operations.Operations dal;
+        private Operations.Operations operations;
         private string connString;
         private ErrorHandler.ErrorHandler errHandler;
 
@@ -44,7 +44,7 @@ namespace RestWebService
                 string url = Convert.ToString(context.Request.Url);
                 string request_instance = url.Split('/').Last<String>().Split('?')[0];
                 connString = Properties.Settings.Default.ConnectionString;
-                dal = new Operations.Operations(connString);
+                operations = new Operations.Operations(connString);
                 errHandler = new ErrorHandler.ErrorHandler();
 
                 //Handling CRUD
@@ -123,7 +123,7 @@ namespace RestWebService
                     string _cedula_temp = context.Request["cedula"];
                     if (_cedula_temp == null)
                     {
-                        List<L3MDB.Empleado> lista_empleados = dal.GetEmpleados();
+                        List<L3MDB.Empleado> lista_empleados = operations.GetEmpleados();
                         string serializedList = Serialize(lista_empleados);
                         context.Response.ContentType = "text/xml";
                         WriteResponse(serializedList);
@@ -135,7 +135,7 @@ namespace RestWebService
 
                         //HTTP Request Type - GET"
                         //Performing Operation - READ"
-                        emp = dal.GetEmpleado(_cedula);
+                        emp = operations.GetEmpleado(_cedula);
                         if (emp == null)
                             context.Response.Write(_cedula + "No Empleado Found" + context.Request["cedula"]);
 
@@ -151,7 +151,7 @@ namespace RestWebService
                     string _codigo_temp = context.Request["codigo"];
                     if (_codigo_temp == null)
                     {
-                        List<L3MDB.Sucursal> lista_sucursales = dal.GetSucursales();
+                        List<L3MDB.Sucursal> lista_sucursales = operations.GetSucursales();
                         string serializedList = Serialize(lista_sucursales);
                         context.Response.ContentType = "text/xml";
                         WriteResponse(serializedList);
@@ -163,7 +163,7 @@ namespace RestWebService
 
                         //HTTP Request Type - GET"
                         //Performing Operation - READ"
-                        suc = dal.GetSucursal(_codigo);
+                        suc = operations.GetSucursal(_codigo);
                         if (suc == null)
                             context.Response.Write(_codigo + "No Sucursal Found" + context.Request["codigo"]);
 
@@ -179,7 +179,7 @@ namespace RestWebService
                     string _id_temp = context.Request["id"];
                     if (_id_temp == null)
                     {
-                        List<L3MDB.Categoria> lista_categorias= dal.GetCategorias();
+                        List<L3MDB.Categoria> lista_categorias= operations.GetCategorias();
                         string serializedList = Serialize(lista_categorias);
                         context.Response.ContentType = "text/xml";
                         WriteResponse(serializedList);
@@ -191,7 +191,7 @@ namespace RestWebService
 
                         //HTTP Request Type - GET"
                         //Performing Operation - READ"
-                        cat = dal.GetCategoria(_id);
+                        cat = operations.GetCategoria(_id);
                         if (cat == null)
                             context.Response.Write(_id + "No Categoria Found" + _id_temp);
 
@@ -214,14 +214,14 @@ namespace RestWebService
                         {
                             if (_fecha_inicial != null && _fecha_final != null)
                             {
-                                List<Operations.Gasto> lista_compras = dal.GetGastos("", _fecha_inicial, _fecha_final);
+                                List<Operations.Gasto> lista_compras = operations.GetGastos("", _fecha_inicial, _fecha_final);
                                 string serializedList = Serialize(lista_compras);
                                 context.Response.ContentType = "text/xml";
                                 WriteResponse(serializedList);
                             }
                             else
                             {
-                                List<L3MDB.Compra> lista_compras = dal.GetCompras();
+                                List<L3MDB.Compra> lista_compras = operations.GetCompras();
                                 string serializedList = Serialize(lista_compras);
                                 context.Response.ContentType = "text/xml";
                                 WriteResponse(serializedList);
@@ -231,14 +231,14 @@ namespace RestWebService
                         {
                             if (_fecha_inicial != null && _fecha_final != null)
                             {
-                                List<Operations.Gasto> lista_compras = dal.GetGastos(_codigo_sucursal, _fecha_inicial, _fecha_final);
+                                List<Operations.Gasto> lista_compras = operations.GetGastos(_codigo_sucursal, _fecha_inicial, _fecha_final);
                                 string serializedList = Serialize(lista_compras);
                                 context.Response.ContentType = "text/xml";
                                 WriteResponse(serializedList);
                             }
                             else
                             {
-                                List<L3MDB.Compra> lista_compras = dal.GetCompras();
+                                List<L3MDB.Compra> lista_compras = operations.GetCompras();
                                 string serializedList = Serialize(lista_compras);
                                 context.Response.ContentType = "text/xml";
                                 WriteResponse(serializedList);
@@ -253,7 +253,7 @@ namespace RestWebService
 
                         //HTTP Request Type - GET"
                         //Performing Operation - READ"
-                        com = dal.GetCompra(_codigo);
+                        com = operations.GetCompra(_codigo);
                         if (com == null)
                             context.Response.Write(_codigo + "No Compra Found" + _codigotemp);
 
@@ -269,7 +269,7 @@ namespace RestWebService
                     string _horastemp = context.Request["id_semana"];
                     if (_horastemp == null)
                     {
-                        List<L3MDB.Horas> lista_horas = dal.GetHorases();
+                        List<L3MDB.Horas> lista_horas = operations.GetHorases();
                         string serializedList = Serialize(lista_horas);
                         context.Response.ContentType = "text/xml";
                         WriteResponse(serializedList);
@@ -281,7 +281,7 @@ namespace RestWebService
                         List<L3MDB.Horas> listaHorasSemana = new List<L3MDB.Horas>();
                         //HTTP Request Type - GET"
                         //Performing Operation - READ"
-                        listaHorasSemana = dal.GetHoras(_horas);
+                        listaHorasSemana = operations.GetHoras(_horas);
                         if (listaHorasSemana.Count == 0)
                             context.Response.Write(_horas + "No Horas Found" + _horastemp);
 
@@ -303,14 +303,14 @@ namespace RestWebService
                         {
                             if (_todos == null)
                             {
-                                List<L3MDB.Producto> lista_productos = dal.GetProductos();
+                                List<L3MDB.Producto> lista_productos = operations.GetProductos();
                                 string serializedList = Serialize(lista_productos);
                                 context.Response.ContentType = "text/xml";
                                 WriteResponse(serializedList);
                             }
                             else
                             {
-                                List<Operations.ReporteProductos> lista_productos = dal.GetProductosTodos();
+                                List<Operations.ReporteProductos> lista_productos = operations.GetProductosTodos();
                                 string serializedList = Serialize(lista_productos);
                                 context.Response.ContentType = "text/xml";
                                 WriteResponse(serializedList);
@@ -318,7 +318,7 @@ namespace RestWebService
                         }
                         else
                         {
-                            List<Operations.ReporteProductosSucursal> lista_productos = dal.GetProductosporSucursal(_codigo_sucursaltemp);
+                            List<Operations.ReporteProductosSucursal> lista_productos = operations.GetProductosporSucursal(_codigo_sucursaltemp);
                             string serializedList = Serialize(lista_productos);
                             context.Response.ContentType = "text/xml";
                             WriteResponse(serializedList);
@@ -330,7 +330,7 @@ namespace RestWebService
 
                         //HTTP Request Type - GET"
                         //Performing Operation - READ"
-                        produ = dal.GetProducto(_codigo_barras, _codigo_sucursaltemp);
+                        produ = operations.GetProducto(_codigo_barras, _codigo_sucursaltemp);
                         if (produ == null)
                             context.Response.Write(_codigo_barras + "No Producto Found" + _codigo_barrastemp);
 
@@ -347,7 +347,7 @@ namespace RestWebService
                     string _codigo_productotemp = context.Request["codigo_producto"];
                     if (_codigo_compratemp == null)
                     {
-                        List<L3MDB.Productos_en_compra> lista_productos_en_compra = dal.GetProductos_en_compras();
+                        List<L3MDB.Productos_en_compra> lista_productos_en_compra = operations.GetProductos_en_compras();
                         string serializedList = Serialize(lista_productos_en_compra);
                         context.Response.ContentType = "text/xml";
                         WriteResponse(serializedList);
@@ -360,7 +360,7 @@ namespace RestWebService
 
                         //HTTP Request Type - GET"
                         //Performing Operation - READ"
-                        producom = dal.GetProducto_en_compra(_codigo_compra, _codigo_producto);
+                        producom = operations.GetProducto_en_compra(_codigo_compra, _codigo_producto);
                         if (producom == null)
                             context.Response.Write(_codigo_compra + "No Producto Found" + _codigo_compratemp);
 
@@ -377,7 +377,7 @@ namespace RestWebService
                     string _codigo_productotemp = context.Request["codigo_producto"];
                     if (_codigo_ventatemp == null)
                     {
-                        List<L3MDB.Productos_en_venta> lista_productos_en_venta = dal.GetProductos_en_ventas();
+                        List<L3MDB.Productos_en_venta> lista_productos_en_venta = operations.GetProductos_en_ventas();
                         string serializedList = Serialize(lista_productos_en_venta);
                         context.Response.ContentType = "text/xml";
                         WriteResponse(serializedList);
@@ -390,7 +390,7 @@ namespace RestWebService
 
                         //HTTP Request Type - GET"
                         //Performing Operation - READ"
-                        produven = dal.GetProducto_en_venta(_codigo_venta, _codigo_producto);
+                        produven = operations.GetProducto_en_venta(_codigo_venta, _codigo_producto);
                         if (produven == null)
                             context.Response.Write(_codigo_venta + "No Producto Found" + _codigo_ventatemp);
 
@@ -406,7 +406,7 @@ namespace RestWebService
                     string _cedulatemp = context.Request["cedula"];
                     if (_cedulatemp == null)
                     {
-                        List<L3MDB.Proveedor> lista_proveedores = dal.GetProveedores();
+                        List<L3MDB.Proveedor> lista_proveedores = operations.GetProveedores();
                         string serializedList = Serialize(lista_proveedores);
                         context.Response.ContentType = "text/xml";
                         WriteResponse(serializedList);
@@ -418,7 +418,7 @@ namespace RestWebService
 
                         //HTTP Request Type - GET"
                         //Performing Operation - READ"
-                        prove = dal.GetProveedor(_cedula);
+                        prove = operations.GetProveedor(_cedula);
                         if (prove == null)
                             context.Response.Write(_cedula + "No Producto Found" + _cedulatemp);
 
@@ -434,7 +434,7 @@ namespace RestWebService
                     string nombretemp = context.Request["nombre"];
                     if (nombretemp == null)
                     {
-                        List<L3MDB.Rol> lista_roles = dal.GetRoles();
+                        List<L3MDB.Rol> lista_roles = operations.GetRoles();
                         string serializedList = Serialize(lista_roles);
                         context.Response.ContentType = "text/xml";
                         WriteResponse(serializedList);
@@ -446,7 +446,7 @@ namespace RestWebService
 
                         //HTTP Request Type - GET"
                         //Performing Operation - READ"
-                        rol = dal.GetRol(nombre);
+                        rol = operations.GetRol(nombre);
                         if (rol == null)
                             context.Response.Write(nombre + "No Producto Found" + nombretemp);
 
@@ -462,7 +462,7 @@ namespace RestWebService
                     string _codigotemp = context.Request["codigo"];
                     if (_codigotemp == null)
                     {
-                        List<L3MDB.Venta> lista_ventas = dal.GetVentas();
+                        List<L3MDB.Venta> lista_ventas = operations.GetVentas();
                         string serializedList = Serialize(lista_ventas);
                         context.Response.ContentType = "text/xml";
                         WriteResponse(serializedList);
@@ -474,7 +474,7 @@ namespace RestWebService
 
                         //HTTP Request Type - GET"
                         //Performing Operation - READ"
-                        ven = dal.GetVenta(_codigo);
+                        ven = operations.GetVenta(_codigo);
                         if (ven == null)
                             context.Response.Write(_codigo + "No Producto Found" + _codigotemp);
 
@@ -488,7 +488,7 @@ namespace RestWebService
             catch (Exception ex)
             {
                 WriteResponse(ex.Message.ToString());
-                errHandler.ErrorMessage = dal.GetException();
+                errHandler.ErrorMessage = operations.GetException();
                 errHandler.ErrorMessage = ex.Message.ToString();                
             }            
         }
@@ -525,7 +525,7 @@ namespace RestWebService
                     L3MDB.Empleado emp = new L3MDB.Empleado(context);
                     //L3MDB.Empleado emp = Deserialize(PostData);                
                     // Insert data in database
-                    dal.AddEmpleado(emp);
+                    operations.AddEmpleado(emp);
                 }
                 #endregion
                 #region Sucursal
@@ -534,7 +534,7 @@ namespace RestWebService
                     L3MDB.Sucursal suc = new L3MDB.Sucursal(context);
                     //L3MDB.Empleado emp = Deserialize(PostData);                
                     // Insert data in database
-                    dal.AddSucursal(suc);
+                    operations.AddSucursal(suc);
                 }
                 #endregion
                 #region Categoria
@@ -543,7 +543,7 @@ namespace RestWebService
                     L3MDB.Categoria cat = new L3MDB.Categoria(context);
                     //L3MDB.Empleado emp = Deserialize(PostData);                
                     // Insert data in database
-                    dal.AddCategoria(cat);
+                    operations.AddCategoria(cat);
                 }
                 #endregion
                 #region Compra
@@ -554,12 +554,12 @@ namespace RestWebService
                         L3MDB.Compra com = new L3MDB.Compra(context);
                         //L3MDB.Empleado emp = Deserialize(PostData);                
                         // Insert data in database
-                        dal.AddCompra(com);
+                        operations.AddCompra(com);
                     }
                     else
                     {
                         L3MDB.Compra com = new L3MDB.Compra(context);
-                        dal.AddCompraProductos(com, context);
+                        operations.AddCompraProductos(com, context);
                     }
                 }
                 #endregion
@@ -569,7 +569,7 @@ namespace RestWebService
                     L3MDB.Horas hor = new L3MDB.Horas(context);
                     //L3MDB.Empleado emp = Deserialize(PostData);                
                     // Insert data in database
-                    dal.AddHoras(hor);
+                    operations.AddHoras(hor);
                 }
                 #endregion
                 #region Producto
@@ -578,7 +578,7 @@ namespace RestWebService
                     L3MDB.Producto produ = new L3MDB.Producto(context);
                     //L3MDB.Empleado emp = Deserialize(PostData);                
                     // Insert data in database
-                    dal.AddProducto(produ);
+                    operations.AddProducto(produ);
                 }
                 #endregion
                 #region Productos_en_compra
@@ -587,7 +587,7 @@ namespace RestWebService
                     L3MDB.Productos_en_compra producom = new L3MDB.Productos_en_compra(context);
                     //L3MDB.Empleado emp = Deserialize(PostData);                
                     // Insert data in database
-                    dal.AddProductocompra(producom);
+                    operations.AddProductocompra(producom);
                 }
                 #endregion
                 #region Productos_en_venta
@@ -596,7 +596,7 @@ namespace RestWebService
                     L3MDB.Productos_en_venta produven = new L3MDB.Productos_en_venta(context);
                     //L3MDB.Empleado emp = Deserialize(PostData);                
                     // Insert data in database
-                    dal.AddProductoventa(produven);
+                    operations.AddProductoventa(produven);
                 }
                 #endregion
                 #region Proveedor
@@ -605,7 +605,7 @@ namespace RestWebService
                     L3MDB.Proveedor prove = new L3MDB.Proveedor(context);
                     //L3MDB.Empleado emp = Deserialize(PostData);                
                     // Insert data in database
-                    dal.AddProveedor(prove);
+                    operations.AddProveedor(prove);
                 }
                 #endregion
                 #region Rol
@@ -614,7 +614,7 @@ namespace RestWebService
                     L3MDB.Rol rol = new L3MDB.Rol(context);
                     //L3MDB.Empleado emp = Deserialize(PostData);                
                     // Insert data in database
-                    dal.AddRol(rol);
+                    operations.AddRol(rol);
                 }
                 #endregion
                 #region Venta
@@ -625,11 +625,11 @@ namespace RestWebService
                         L3MDB.Venta ven = new L3MDB.Venta(context);
                         //L3MDB.Empleado emp = Deserialize(PostData);                
                         // Insert data in database
-                        dal.AddVenta(ven);
+                        operations.AddVenta(ven);
                     }
                     else
                     {
-                        dal.AddVentaProductos(context);
+                        operations.AddVentaProductos(context);
                     }
                 }
                 #endregion               
@@ -638,7 +638,7 @@ namespace RestWebService
             {
 
                 WriteResponse(ex.Message.ToString());
-                errHandler.ErrorMessage = dal.GetException();
+                errHandler.ErrorMessage = operations.GetException();
                 errHandler.ErrorMessage = ex.Message.ToString();                
             }
         }
@@ -661,14 +661,6 @@ namespace RestWebService
             // If the request passes through a cache and the URL identifies 
             // one or more currently cached entities, those entries should 
             // be treated as stale. Responses to this method are not cacheable.
-
-
-            // Common Problems
-            // The PUT method is not widely supported on public servers 
-            // due to security concerns and generally FTP is used to 
-            // upload new and modified files to the webserver. 
-            // Before executing a PUT method on a URL, it may be worth 
-            // checking that PUT is supported using the OPTIONS method.
             
             try
             {
@@ -685,7 +677,7 @@ namespace RestWebService
                     // Deserialize Employee
                     //L3MDB.Empleado emp = Deserialize(PUTRequestByte);
                     L3MDB.Empleado emp = new L3MDB.Empleado(context);
-                    dal.UpdateEmpleado(emp);
+                    operations.UpdateEmpleado(emp);
                     //context.Response.Write("Employee Updtated Sucessfully");
                     WriteResponse("oka");
                 }
@@ -694,7 +686,7 @@ namespace RestWebService
                 if (request_instance == "sucursal")
                 {
                     L3MDB.Sucursal suc = new L3MDB.Sucursal(context);
-                    dal.UpdateSucursal(suc);
+                    operations.UpdateSucursal(suc);
                     WriteResponse("ok");
                 }
                 #endregion
@@ -702,7 +694,7 @@ namespace RestWebService
                 if (request_instance == "categoria")
                 {
                     L3MDB.Categoria cat = new L3MDB.Categoria(context);
-                    dal.UpdateCategoria(cat);
+                    operations.UpdateCategoria(cat);
                     WriteResponse("ok");
                 }
                 #endregion
@@ -710,7 +702,7 @@ namespace RestWebService
                 if (request_instance == "compra")
                 {
                     L3MDB.Compra com = new L3MDB.Compra(context);
-                    dal.UpdateCompra(com);
+                    operations.UpdateCompra(com);
                     WriteResponse("ok");
                 }
                 #endregion
@@ -718,7 +710,7 @@ namespace RestWebService
                 if (request_instance == "horas")
                 {
                     L3MDB.Horas hor = new L3MDB.Horas(context);
-                    dal.UpdateHoras(hor);
+                    operations.UpdateHoras(hor);
                     WriteResponse("ok");
                 }
                 #endregion
@@ -726,15 +718,38 @@ namespace RestWebService
                 if (request_instance == "producto")
                 {
                     L3MDB.Producto produ = new L3MDB.Producto(context);
-                    dal.UpdateProducto(produ);
+                    operations.UpdateProducto(produ);
                     WriteResponse("ok");
                 }
                 #endregion
                 #region Productos_en_compra
                 if (request_instance == "productos_en_compra")
                 {
-                    L3MDB.Productos_en_compra producom = new L3MDB.Productos_en_compra(context);
-                    dal.UpdateProductocompra(producom);
+                    string listaproductosconComas = context.Request["Productos"];
+                    string listacantidadesconComas = context.Request["Cantidad"];
+                    if (listaproductosconComas == null)
+                    {
+                        L3MDB.Productos_en_compra producom = new L3MDB.Productos_en_compra(context);
+                        operations.UpdateProductocompra(producom);
+                    }
+                    else
+                    {
+                        string codigo_compra_temp = context.Request["codigo_compra"];
+                        int codigo_compra = int.Parse(codigo_compra_temp);
+                        string[] listaProductosSeparados = listaproductosconComas.Split(',');
+                        string[] listaCantidadesSeparadas = listacantidadesconComas.Split(',');
+                        for (int i = 0; i < listaProductosSeparados.Length; i++)
+                        {
+                            L3MDB.Productos_en_compra produCompModificar = new L3MDB.Productos_en_compra();
+                            int codigo_producto = int.Parse(listaProductosSeparados[i]);
+                            int cantidad = int.Parse(listaCantidadesSeparadas[i]);
+                            produCompModificar.Cantidad = cantidad;
+                            produCompModificar.Codigo_compra = codigo_compra;
+                            produCompModificar.Codigo_producto = codigo_producto;
+                            operations.UpdateProductocompra(produCompModificar);
+                        }
+                    }
+                    
                     WriteResponse("ok");
                 }
                 #endregion
@@ -742,7 +757,7 @@ namespace RestWebService
                 if (request_instance == "productos_en_venta")
                 {
                     L3MDB.Productos_en_venta produven = new L3MDB.Productos_en_venta(context);
-                    dal.UpdateProductoventa(produven);
+                    operations.UpdateProductoventa(produven);
                     WriteResponse("ok");
                 }
                 #endregion
@@ -750,7 +765,7 @@ namespace RestWebService
                 if (request_instance == "proveedor")
                 {
                     L3MDB.Proveedor prove = new L3MDB.Proveedor(context);
-                    dal.UpdateProveedor(prove);
+                    operations.UpdateProveedor(prove);
                     WriteResponse("ok");
                 }
                 #endregion
@@ -758,7 +773,7 @@ namespace RestWebService
                 if (request_instance == "rol")
                 {
                     L3MDB.Rol rol = new L3MDB.Rol(context);
-                    dal.UpdateRol(rol);
+                    operations.UpdateRol(rol);
                     WriteResponse("ok");
                 }
                 #endregion
@@ -766,7 +781,7 @@ namespace RestWebService
                 if (request_instance == "venta")
                 {
                     L3MDB.Venta ven = new L3MDB.Venta(context);
-                    dal.UpdateVenta(ven);
+                    operations.UpdateVenta(ven);
                     WriteResponse("ok");
                 }
                 #endregion
@@ -775,7 +790,7 @@ namespace RestWebService
             {
 
                 WriteResponse(ex.Message.ToString());
-                errHandler.ErrorMessage = dal.GetException();
+                errHandler.ErrorMessage = operations.GetException();
                 errHandler.ErrorMessage = ex.Message.ToString();                
             }
         }
@@ -792,7 +807,7 @@ namespace RestWebService
                 {
                     string _cedula_temp = context.Request["cedula"];
                     int _cedula = int.Parse(_cedula_temp);
-                    dal.DeleteEmpleado(_cedula);
+                    operations.DeleteEmpleado(_cedula);
                     WriteResponse("ok");
                 }
                 #endregion
@@ -800,7 +815,7 @@ namespace RestWebService
                 if (request_instance == "sucursal")
                 {
                     string _codigo_temp = context.Request["codigo"];
-                    dal.DeleteSucursal(_codigo_temp);
+                    operations.DeleteSucursal(_codigo_temp);
                     WriteResponse("ok");
                 }
                 #endregion
@@ -809,7 +824,7 @@ namespace RestWebService
                 {
                     string _id_temp = context.Request["id"];
                     int _id = int.Parse(_id_temp);
-                    dal.DeleteCategoria(_id);
+                    operations.DeleteCategoria(_id);
                     WriteResponse("ok");
                 }
                 #endregion
@@ -818,7 +833,7 @@ namespace RestWebService
                 {
                     string _codigo_temp = context.Request["codigo"];
                     int _codigo = int.Parse(_codigo_temp);
-                    dal.DeleteCompra(_codigo);
+                    operations.DeleteCompra(_codigo);
                     WriteResponse("ok");
                 }
                 #endregion
@@ -828,7 +843,7 @@ namespace RestWebService
                     string _id_semana = context.Request["id_semana"];
                     string _cedempleado_temp = context.Request["ced_empleado"];
                     int _cedempleado = int.Parse(_cedempleado_temp);
-                    dal.DeleteHoras(_id_semana, _cedempleado);
+                    operations.DeleteHoras(_id_semana, _cedempleado);
                     WriteResponse("ok");
                 }
                 #endregion
@@ -838,7 +853,7 @@ namespace RestWebService
                     string _codigo_barras_temp = context.Request["codigo_barras"];
                     int _codigo_barras = int.Parse(_codigo_barras_temp);
                     string _codigo_sucursal = context.Request["codigo_sucursal"];
-                    dal.DeleteProducto(_codigo_barras, _codigo_sucursal);
+                    operations.DeleteProducto(_codigo_barras, _codigo_sucursal);
                     WriteResponse("ok");
                 }
                 #endregion
@@ -849,7 +864,7 @@ namespace RestWebService
                     string _codigo_productotemp = context.Request["codigo_producto"];
                     int _codigo_compra = int.Parse(_codigo_compra_temp);
                     int _codigo_producto = int.Parse(_codigo_productotemp);
-                    dal.DeleteProductocompra(_codigo_compra, _codigo_producto);
+                    operations.DeleteProductocompra(_codigo_compra, _codigo_producto);
                     WriteResponse("ok");
                 }
                 #endregion
@@ -860,7 +875,7 @@ namespace RestWebService
                     string _codigo_productotemp = context.Request["codigo_producto"];
                     int _codigo_venta = int.Parse(_codigo_venta_temp);
                     int _codigo_producto = int.Parse(_codigo_productotemp);
-                    dal.DeleteProductoventa(_codigo_venta, _codigo_producto);
+                    operations.DeleteProductoventa(_codigo_venta, _codigo_producto);
                     WriteResponse("ok");
                 }
                 #endregion
@@ -869,7 +884,7 @@ namespace RestWebService
                 {
                     string _cedula_temp = context.Request["cedula"];
                     int _cedula = int.Parse(_cedula_temp);
-                    dal.DeleteProveedor(_cedula);
+                    operations.DeleteProveedor(_cedula);
                     WriteResponse("ok");
                 }
                 #endregion
@@ -877,7 +892,7 @@ namespace RestWebService
                 if (request_instance == "rol")
                 {
                     string nombre = context.Request["nombre"];
-                    dal.DeleteRol(nombre);
+                    operations.DeleteRol(nombre);
                     WriteResponse("ok");
                 }
                 #endregion
@@ -886,7 +901,7 @@ namespace RestWebService
                 {
                     string _codigo_temp = context.Request["codigo"];
                     int _codigo = int.Parse(_codigo_temp);
-                    dal.DeleteVenta(_codigo);
+                    operations.DeleteVenta(_codigo);
                     WriteResponse("ok");
                 }
                 #endregion
@@ -895,7 +910,7 @@ namespace RestWebService
             {
                 
                 WriteResponse(ex.Message.ToString());
-                errHandler.ErrorMessage = dal.GetException();
+                errHandler.ErrorMessage = operations.GetException();
                 errHandler.ErrorMessage = ex.Message.ToString();                
             }
         }
@@ -930,7 +945,7 @@ namespace RestWebService
             catch (Exception ex)
             {
                 
-                errHandler.ErrorMessage = dal.GetException();
+                errHandler.ErrorMessage = operations.GetException();
                 errHandler.ErrorMessage = ex.Message.ToString();
                 throw;
             }

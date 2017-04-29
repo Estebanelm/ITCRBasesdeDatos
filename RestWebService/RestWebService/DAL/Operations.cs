@@ -50,7 +50,7 @@ namespace Operations
                     
                     //using parametirized query
                     string sqlInserString =
-                    "INSERT INTO Empleado (Nombre, Pri_apellido, Seg_apellido, Cedula, Fecha_inicio, Salario_por_hora, Fecha_nacimiento, Codigo_sucursal) VALUES (@nombre, @pri_apellido, @seg_apellido, @cedula, @fecha_inicio, @salario_por_hora, @fecha_nacimiento, @codigo_sucursal)";
+                    "INSERT INTO Empleado (Nombre, Pri_apellido, Seg_apellido, Cedula, Fecha_inicio, Salario_por_hora, Fecha_nacimiento, Codigo_sucursal, Contrasena) VALUES (@nombre, @pri_apellido, @seg_apellido, @cedula, @fecha_inicio, @salario_por_hora, @fecha_nacimiento, @codigo_sucursal, @contrasena)";
                    
                     conn = new SqlConnection(connString);
                     
@@ -67,8 +67,9 @@ namespace Operations
                     SqlParameter Salario_por_horaparam = new SqlParameter("@salario_por_hora", emp.Salario_por_hora.ToString());
                     SqlParameter Fecha_nacimientoparam = new SqlParameter("@fecha_nacimiento", emp.Fecha_nacimiento);
                     SqlParameter Codigo_sucursalparam = new SqlParameter("@codigo_sucursal", emp.Sucursal);
+                    SqlParameter Contrasenaparam = new SqlParameter("@contrasena", emp.Contrasena);
 
-                    command.Parameters.AddRange(new SqlParameter[]{Nombreparam,Pri_apellidoparam, Seg_apellidoparam, Cedulaparam, Fecha_inicioparam, Salario_por_horaparam, Fecha_nacimientoparam, Codigo_sucursalparam});
+                    command.Parameters.AddRange(new SqlParameter[]{Nombreparam,Pri_apellidoparam, Seg_apellidoparam, Cedulaparam, Fecha_inicioparam, Salario_por_horaparam, Fecha_nacimientoparam, Codigo_sucursalparam, Contrasenaparam});
                     command.ExecuteNonQuery();
                     command.Connection.Close();
                     return true;
@@ -91,7 +92,7 @@ namespace Operations
                 using (conn)
                 {
                     string sqlUpdateString =
-                    "UPDATE Empleado SET Nombre=@nombre, Pri_apellido=@pri_apellido, Seg_apellido=@seg_apellido, Fecha_inicio=@fecha_inicio, Salario_por_hora=@salario_por_hora, Fecha_nacimiento=@fecha_nacimiento, Codigo_sucursal=@codigo_sucursal WHERE Cedula=@cedula ";
+                    "UPDATE Empleado SET Nombre=@nombre, Pri_apellido=@pri_apellido, Seg_apellido=@seg_apellido, Fecha_inicio=@fecha_inicio, Salario_por_hora=@salario_por_hora, Fecha_nacimiento=@fecha_nacimiento, Codigo_sucursal=@codigo_sucursal, Contrasena=@contrasena WHERE Cedula=@cedula ";
                     conn = new SqlConnection(connString);
 
                     command = new SqlCommand();
@@ -107,8 +108,9 @@ namespace Operations
                     SqlParameter Salario_por_horaparam = new SqlParameter("@salario_por_hora", emp.Salario_por_hora.ToString());
                     SqlParameter Fecha_nacimientoparam = new SqlParameter("@fecha_nacimiento", emp.Fecha_nacimiento);
                     SqlParameter Codigo_sucursalparam = new SqlParameter("@codigo_sucursal", emp.Sucursal);
+                    SqlParameter Contrasenaparam = new SqlParameter("@contrasena", emp.Contrasena);
 
-                    command.Parameters.AddRange(new SqlParameter[]{Nombreparam,Pri_apellidoparam, Seg_apellidoparam, Cedulaparam, Fecha_inicioparam, Salario_por_horaparam, Fecha_nacimientoparam, Codigo_sucursalparam});
+                    command.Parameters.AddRange(new SqlParameter[]{Nombreparam,Pri_apellidoparam, Seg_apellidoparam, Cedulaparam, Fecha_inicioparam, Salario_por_horaparam, Fecha_nacimientoparam, Codigo_sucursalparam, Contrasenaparam});
                     command.ExecuteNonQuery();
                     #region  Revision de que se hizo bien
                     string buscarEmpleado = "SELECT * FROM Empleado WHERE Cedula=@cedula";
@@ -249,6 +251,7 @@ namespace Operations
                         emp.Salario_por_hora = double.Parse(salario_temp);
                         emp.Fecha_nacimiento = reader[6].ToString();
                         emp.Sucursal = reader[7].ToString();
+                        emp.Contrasena = reader[8].ToString();
                         empList.Add(emp);
                     }
                     command.Connection.Close();
@@ -804,7 +807,7 @@ namespace Operations
                 using (conn)
                 {
                     string sqlUpdateString =
-                    "UPDATE Compra SET Cedula_proveedor=@cedula_proveedor, Descripcion=@descripcion, Foto=@foto, Fecha_registro=@fecha_registro, Fecha_real=@fecha_real, Codigo_sucursal=@codigo_sucursal, Precio_total=@precio_total WHERE Codigo=@codigo";
+                    "UPDATE Compra SET Cedula_proveedor=@cedula_proveedor, Descripcion=@descripcion, Foto=@foto, Fecha_registro=@fecha_registro, Fecha_real=@fecha_real, Codigo_sucursal=@codigo_sucursal WHERE Codigo=@codigo";
                     conn = new SqlConnection(connString);
 
                     command = new SqlCommand();
@@ -876,26 +879,36 @@ namespace Operations
 
                     command.CommandText = sqlDeleteString;
                     command.ExecuteNonQuery();
-
-                    #region  Revision de que se hizo bien
-                    string buscarCompra = "SELECT Activo FROM Compra WHERE Codigo=@codigo";
-                    string compraEncontrada = "";
-                    command.CommandText = buscarCompra;
+                    #region  Recuperacion de datos
+                    string sqlGetCodigoSucursal = "SELECT Codigo_sucursal FROM Compra WHERE Codigo=@codigo";
+                    command.CommandText = sqlGetCodigoSucursal;
                     SqlDataReader reader = command.ExecuteReader();
-                    while (reader.Read())
+                    reader.Read();
+                    string codigo_sucursal = reader[0].ToString();
+                    reader.Close();
+                    string sqlGetListaProductos = "SELECT Codigo_producto, Cantidad FROM Productos_en_compra WHERE Codigo_compra=@codigo";
+                    command.CommandText = sqlGetListaProductos;
+                    List<string> listaCodigosBarra = new List<string>();
+                    List<int> listaCantidades = new List<int>();
+                    SqlDataReader reader2 = command.ExecuteReader();
+                    while (reader2.Read())
                     {
-                        compraEncontrada = reader[0].ToString();
+                        string codigoBarra = reader2[0].ToString();
+                        string cantidadString = reader2[1].ToString();
+                        int cantidad = int.Parse(cantidadString);
+                        listaCodigosBarra.Add(codigoBarra);
+                        listaCantidades.Add(cantidad);
                     }
-                    command.Connection.Close();
-                    if (compraEncontrada != "")
+                    reader2.Close();
+                    for (int i = 0; i < listaCantidades.Count; i++)
                     {
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
+                        string sqlUpdateProducto = "UPDATE Producto SET Cantidad=Cantidad-" + listaCantidades[i].ToString() + " WHERE Codigo_barras=" + listaCodigosBarra[i] + " AND Codigo_sucursal='" + codigo_sucursal + "' ";
+                        command.CommandText = sqlUpdateProducto;
+                        command.ExecuteNonQuery();
                     }
                     #endregion
+                    command.Connection.Close();
+                    return true;
                 }
             }
             catch (Exception ex)
@@ -1072,13 +1085,13 @@ namespace Operations
                     {
                         sqlSelectString = "SELECT Compra.Fecha_real, Proveedor.Nombre, Compra.Descripcion, Compra.Precio_total " +
                                           "FROM Compra " +
-                                          "LEFT JOIN Proveedor ON Compra.Cedula_proveedor=Proveedor.Cedula WHERE Fecha_real>'" + fecha_inicial + "' AND Fecha_real<'" + fecha_final + "' ORDER BY Compra.Fecha_real asc; ";
+                                          "LEFT JOIN Proveedor ON Compra.Cedula_proveedor=Proveedor.Cedula WHERE Fecha_real>'" + fecha_inicial + "' AND Fecha_real<'" + fecha_final + "' AND Activo=1 ORDER BY Compra.Fecha_real asc; ";
                     }
                     else
                     {
                         sqlSelectString = "SELECT Compra.Fecha_real, Proveedor.Nombre, Compra.Descripcion, Compra.Precio_total "+
                                           "FROM Compra "+
-                                          "LEFT JOIN Proveedor ON Compra.Cedula_proveedor=Proveedor.Cedula WHERE Compra.Codigo_sucursal='" + codigo_sucursal + "' AND Fecha_real>'" + fecha_inicial + "' AND Fecha_real<'" + fecha_final + "' ORDER BY Compra.Fecha_real asc; ";
+                                          "LEFT JOIN Proveedor ON Compra.Cedula_proveedor=Proveedor.Cedula WHERE Compra.Codigo_sucursal='" + codigo_sucursal + "' AND Fecha_real>'" + fecha_inicial + "' AND Fecha_real<'" + fecha_final + "' AND Activo=1 ORDER BY Compra.Fecha_real asc; ";
                     }
                     command = new SqlCommand(sqlSelectString, conn);
                     command.Connection.Open();
@@ -1231,6 +1244,34 @@ namespace Operations
                     SqlParameter codigoparam = new SqlParameter("@codigo", codigo);
                     command.Parameters.Add(codigoparam);
                     command.ExecuteNonQuery();
+                    #region  Recuperacion de datos
+                    string sqlGetCodigoSucursal = "SELECT Codigo_sucursal FROM Venta WHERE Codigo=@codigo";
+                    command.CommandText = sqlGetCodigoSucursal;
+                    SqlDataReader reader = command.ExecuteReader();
+                    reader.Read();
+                    string codigo_sucursal = reader[0].ToString();
+                    reader.Close();
+                    string sqlGetListaProductos = "SELECT Codigo_producto, Cantidad FROM Productos_en_venta WHERE Codigo_venta=@codigo";
+                    command.CommandText = sqlGetListaProductos;
+                    List<string> listaCodigosBarra = new List<string>();
+                    List<int> listaCantidades = new List<int>();
+                    SqlDataReader reader2 = command.ExecuteReader();
+                    while(reader2.Read())
+                    {
+                        string codigoBarra = reader2[0].ToString();
+                        string cantidadString = reader2[1].ToString();
+                        int cantidad = int.Parse(cantidadString);
+                        listaCodigosBarra.Add(codigoBarra);
+                        listaCantidades.Add(cantidad);
+                    }
+                    reader2.Close();
+                    for (int i = 0; i < listaCantidades.Count; i++)
+                    {
+                        string sqlUpdateProducto = "UPDATE Producto SET Cantidad=Cantidad+" + listaCantidades[i].ToString() + " WHERE Codigo_barras=" + listaCodigosBarra[i] + " AND Codigo_sucursal='" + codigo_sucursal + "' ";
+                        command.CommandText = sqlUpdateProducto;
+                        command.ExecuteNonQuery();
+                    }
+                    #endregion
                     command.Connection.Close();
                     return true;
                 }
@@ -1719,6 +1760,8 @@ namespace Operations
                     command.Parameters.AddRange(new SqlParameter[] { Exentoparam, Codigo_barrasparam, Nombreparam, Descripcionparam, Impuestoparam, Precio_compraparam, Descuentoparam, Codigo_sucursalparam, Cantidadparam, Precio_ventaparam, Cedula_proveedorparam });
                     command.ExecuteNonQuery();
 
+                    
+
                     #region  Revision de que se hizo bien
                     string buscarProducto = "SELECT * FROM Producto WHERE Codigo_barras=@codigo_barras AND Codigo_sucursal=@codigo_sucursal";
                     string productoEncontrado = "";
@@ -2039,21 +2082,65 @@ namespace Operations
             {
                 using (conn)
                 {
-                    string sqlUpdateString =
-                    "UPDATE Productos_en_compra SET Cantidad=@cantidad WHERE Codigo_compra=@codigo_compra AND Codigo_producto=@codigo_producto";
+                    
                     conn = new SqlConnection(connString);
 
                     command = new SqlCommand();
                     command.Connection = conn;
                     command.Connection.Open();
-                    command.CommandText = sqlUpdateString;
+                    
 
-                    SqlParameter Codigo_productoparam = new SqlParameter("@codigo_producto", producomp.Codigo_producto.ToString());
-                    SqlParameter Codigo_compraparam = new SqlParameter("@codigo_compra", producomp.Codigo_compra.ToString());
-                    SqlParameter Cantidadparam = new SqlParameter("@cantidad", producomp.Cantidad.ToString());
+                    SqlParameter Codigo_productoparam = new SqlParameter("@codigo_producto", producomp.Codigo_producto);
+                    SqlParameter Codigo_compraparam = new SqlParameter("@codigo_compra", producomp.Codigo_compra);
+                    SqlParameter Cantidadparam = new SqlParameter("@cantidad", producomp.Cantidad);
 
                     command.Parameters.AddRange(new SqlParameter[] { Codigo_productoparam, Codigo_compraparam, Cantidadparam });
+
+
+                    #region Update Cantidad producto
+                    string sqlGetCantidadOriginal = "SELECT Cantidad FROM Productos_en_compra WHERE Codigo_compra=@codigo_compra AND Codigo_producto=@codigo_producto ";
+                    command.CommandText = sqlGetCantidadOriginal;
+                    SqlDataReader readertemp3 = command.ExecuteReader();
+                    readertemp3.Read();
+                    string cantidadOriginalString = readertemp3[0].ToString();
+                    readertemp3.Close();
+                    int cantidadOriginal = int.Parse(cantidadOriginalString);
+                    string sqlGetCodigoSucursal = "SELECT Codigo_sucursal FROM Compra WHERE Codigo=@codigo_compra";
+                    command.CommandText = sqlGetCodigoSucursal;
+                    SqlDataReader readertemp = command.ExecuteReader();
+                    readertemp.Read();
+                    string codigo_sucursal = readertemp[0].ToString();
+                    readertemp.Close();
+                    string sqlGetPrecio = "SELECT Precio_venta, Cantidad FROM Producto WHERE Codigo_barras=@codigo_producto AND Codigo_sucursal='" + codigo_sucursal + "' ";
+                    command.CommandText = sqlGetPrecio;
+                    SqlDataReader readertemp2 = command.ExecuteReader();
+                    readertemp2.Read();
+                    string precioString = readertemp2[0].ToString();
+                    string cantidadDisponibleString = readertemp2[1].ToString();
+                    readertemp2.Close();
+                    double precioProducto = double.Parse(precioString);
+                    int cantidadDisponible = int.Parse(cantidadDisponibleString);
+                    string sqlReduceCantidadProducto = "UPDATE Producto SET Cantidad=" + (cantidadDisponible - cantidadOriginal + producomp.Cantidad).ToString() + " WHERE Codigo_barras=@codigo_producto AND Codigo_sucursal='" + codigo_sucursal + "' ";
+                    command.CommandText = sqlReduceCantidadProducto;
                     command.ExecuteNonQuery();
+                    #endregion
+                    string sqlUpdateString =
+                    "UPDATE Productos_en_compra SET Cantidad=@cantidad, Precio_total=" + (producomp.Cantidad * precioProducto).ToString() + " WHERE Codigo_compra = @codigo_compra AND Codigo_producto = @codigo_producto";
+                    command.CommandText = sqlUpdateString;
+                    command.ExecuteNonQuery();
+
+                    string sqlgetCompraTotal = "SELECT SUM(Precio_total) FROM Productos_en_compra WHERE Codigo_compra=@codigo_compra ";
+                    command.CommandText = sqlgetCompraTotal;
+                    SqlDataReader reader2 = command.ExecuteReader();
+                    reader2.Read();
+                    string obtenerSuma = reader2[0].ToString();
+                    reader2.Close();
+                    double CompraTotal = double.Parse(obtenerSuma);
+                    string sqlUpdateCompra = "UPDATE Compra SET Precio_total=" + CompraTotal.ToString() + " WHERE Codigo=@codigo_compra ";
+                    command.CommandText = sqlUpdateCompra;
+                    command.ExecuteNonQuery();
+
+                    
                     #region  Revision de que se hizo bien
                     string buscarProductoCompra = "SELECT * FROM Productos_en_compra WHERE Codigo_compra=@codigo_compra AND Codigo_producto=@codigo_producto";
                     string productoCompraEncontrado = "";
@@ -2257,23 +2344,78 @@ namespace Operations
             {
                 using (conn)
                 {
-                    string sqlUpdateString =
-                    "UPDATE Productos_en_venta SET Cantidad=@cantidad, Precio_individual=@precio_individual WHERE Codigo_venta=@codigo_venta AND Codigo_producto=@codigo_producto";
+                    
                     conn = new SqlConnection(connString);
 
                     command = new SqlCommand();
                     command.Connection = conn;
                     command.Connection.Open();
-                    command.CommandText = sqlUpdateString;
+                    
 
-                    SqlParameter Codigo_productoparam = new SqlParameter("@codigo_producto", produven.Codigo_producto.ToString());
-                    SqlParameter Codigo_ventaparam = new SqlParameter("@codigo_venta", produven.Codigo_venta.ToString());
-                    SqlParameter Cantidadparam = new SqlParameter("@cantidad", produven.Cantidad.ToString());
-                    SqlParameter Precio_individualparam = new SqlParameter("@precio_individual", produven.Precio_individual.ToString());
+                    SqlParameter Codigo_productoparam = new SqlParameter("@codigo_producto", produven.Codigo_producto);
+                    SqlParameter Codigo_ventaparam = new SqlParameter("@codigo_venta", produven.Codigo_venta);
+                    SqlParameter Cantidadparam = new SqlParameter("@cantidad", produven.Cantidad);
 
 
-                    command.Parameters.AddRange(new SqlParameter[] { Codigo_productoparam, Precio_individualparam, Cantidadparam, Codigo_ventaparam });
+                    command.Parameters.AddRange(new SqlParameter[] { Codigo_productoparam, Cantidadparam, Codigo_ventaparam });
+
+                    string sqlGetCodigoSucursal = "SELECT Codigo_sucursal FROM Venta WHERE Codigo=@codigo_venta";
+                    command.CommandText = sqlGetCodigoSucursal;
+                    SqlDataReader readertemp = command.ExecuteReader();
+                    readertemp.Read();
+                    string codigo_sucursal = readertemp[0].ToString();
+                    readertemp.Close();
+                    string sqlGetCantidadOriginal = "SELECT Cantidad FROM Productos_en_venta WHERE Codigo_venta=@codigo_venta AND Codigo_producto=@codigo_producto";
+                    command.CommandText = sqlGetCantidadOriginal;
+                    SqlDataReader readertemp2 = command.ExecuteReader();
+                    readertemp2.Read();
+                    string cantidadOriginalString = readertemp2[0].ToString();
+                    readertemp2.Close();
+                    int cantidadOriginal = int.Parse(cantidadOriginalString);
+                    string sqlGetPrecio = "SELECT Precio_venta, Cantidad FROM Producto WHERE Codigo_barras=@codigo_producto AND Codigo_sucursal='" + codigo_sucursal + "' ";
+                    command.CommandText = sqlGetPrecio;
+                    SqlDataReader readertemp1 = command.ExecuteReader();
+                    readertemp1.Read();
+                    string precioString = readertemp1[0].ToString();
+                    string cantidadDisponibleString = readertemp1[1].ToString();
+                    readertemp1.Close();
+                    double precioProducto = double.Parse(precioString);
+                    int cantidadDisponible = int.Parse(cantidadDisponibleString);
+                    string sqlReduceCantidadProducto = "UPDATE Producto SET Cantidad=" + (cantidadDisponible + cantidadOriginal - produven.Cantidad).ToString() + " WHERE Codigo_barras=@codigo_producto AND Codigo_sucursal='" + codigo_sucursal + "' ";
+                    command.CommandText = sqlReduceCantidadProducto;
                     command.ExecuteNonQuery();
+                    string sqlUpdateString =
+                    "UPDATE Productos_en_venta SET Cantidad=@cantidad, Precio_individual=" + precioProducto.ToString() + ", Precio_total=" + (precioProducto * produven.Cantidad).ToString() + " WHERE Codigo_venta=@codigo_venta AND Codigo_producto=@codigo_producto";
+                    command.CommandText = sqlUpdateString;
+                    command.ExecuteNonQuery();
+                    string sqlgetVentaTotal = "SELECT SUM(Precio_total) FROM Productos_en_venta WHERE Codigo_venta=@codigo_venta ";
+                    command.CommandText = sqlgetVentaTotal;
+                    SqlDataReader reader2 = command.ExecuteReader();
+                    reader2.Read();
+                    string obtenerSuma = reader2[0].ToString();
+                    reader2.Close();
+                    double VentaTotalSinDesc = double.Parse(obtenerSuma);
+                    string sqlgetDescuento = "SELECT Descuento, Impuesto FROM Producto WHERE Codigo_sucursal='" + codigo_sucursal + "' ";
+                    command.CommandText = sqlgetDescuento;
+                    SqlDataReader reader1 = command.ExecuteReader();
+                    reader1.Read();
+                    string descuentoString = reader1[0].ToString();
+                    string impuestoString = reader1[1].ToString();
+                    reader1.Close();
+                    int Porcentajedescuento = int.Parse(descuentoString);
+                    double PorcentajedescuentoDecimales = Porcentajedescuento / 100.0;
+                    int Porcentajeimpuesto = int.Parse(impuestoString);
+                    double descuentoMoneda = VentaTotalSinDesc * (Porcentajedescuento / 100.0);
+                    double VentaTotalconDesc = VentaTotalSinDesc - descuentoMoneda;
+                    double impuestoMoneda = VentaTotalconDesc * (Porcentajeimpuesto / 100.0);
+                    double Ventatotal = VentaTotalconDesc + impuestoMoneda;
+                    string sqlUpdateVenta = "UPDATE Venta SET Descuento=" + descuentoMoneda.ToString() + ", Precio_total=" + Ventatotal.ToString() + ", Impuesto=" + impuestoMoneda.ToString() + " WHERE Codigo=@codigo_venta ";
+                    command.CommandText = sqlUpdateVenta;
+                    command.ExecuteNonQuery();
+
+                    command.ExecuteNonQuery();
+
+
                     #region  Revision de que se hizo bien
                     string buscarProductoVenta = "SELECT * FROM Productos_en_venta WHERE Codigo_venta=@codigo_venta AND Codigo_producto=@codigo_producto";
                     string productoVentaEncontrado = "";

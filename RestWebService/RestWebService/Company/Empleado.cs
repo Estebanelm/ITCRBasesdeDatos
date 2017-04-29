@@ -19,6 +19,7 @@ namespace L3MDB
         private string _fecha_inicio;
         private string _fecha_nacimiento;
         private string _codigo_sucursal;
+        private string _contrasena;
 
         public Empleado()
         { }
@@ -28,6 +29,10 @@ namespace L3MDB
             _nombre = context.Request["Nombre"];
             _pri_apellido = context.Request["Pri_apellido"];
             _seg_apellido = context.Request["Seg_apellido"];
+            if (_seg_apellido == null)
+            {
+                _seg_apellido = "";
+            }
             string cedula_temp = context.Request["Cedula"];
             _cedula = int.Parse(cedula_temp);
             string salario_temp = context.Request["Salario_por_hora"];
@@ -35,6 +40,11 @@ namespace L3MDB
             _fecha_inicio = context.Request["Fecha_inicio"];
             _fecha_nacimiento = context.Request["Fecha_nacimiento"];
             _codigo_sucursal = context.Request["Codigo_sucursal"];
+            _contrasena = context.Request["Contrasena"];
+            if (_contrasena == null)
+            {
+                _contrasena = "";
+            }
 
         }
 
@@ -112,6 +122,19 @@ namespace L3MDB
             set
             {
                 _codigo_sucursal = value;
+            }
+        }
+
+        public string Contrasena
+        {
+            get
+            {
+                return _contrasena;
+            }
+
+            set
+            {
+                _contrasena = value;
             }
         }
 
