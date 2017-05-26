@@ -11,6 +11,7 @@ using Operations;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Data.SqlClient;
 // REST Web Service Test Harness
 // Contains Test Methods written for testing intermediate project
 // functionalities. Comment / uncomment as needed
@@ -24,6 +25,153 @@ namespace TestHarness
             Sucursal suc = new Sucursal();
             string strConnString = "Data Source=LAPTOP-2E6BHQDP\\SQLEXPRESS;Initial Catalog=L3MDB;Integrated Security=True";
             Operations.Operations dal = new Operations.Operations(strConnString);
+
+
+
+            using(SqlConnection conn = new SqlConnection(strConnString))
+            {
+                string sucursaltemp = "SJ45";
+                string cajerotemp = "115930941";
+
+                //////////////////////////////
+
+                string numerotarjeta = "5";
+                string codigoseguridad = "430";
+                string fechaexpiraciontemp = "2027-05-22";
+
+                SqlCommand command = new SqlCommand();
+                command.Connection = conn;
+                command.Connection.Open();
+
+
+                SqlParameter Codigo_sucursalparam = new SqlParameter("@codigo_sucursal", sucursaltemp);
+                SqlParameter Cedula_cajeroparam = new SqlParameter("@cedula_cajero", int.Parse(cajerotemp));
+
+                command.Parameters.AddRange(new SqlParameter[] { Codigo_sucursalparam, Cedula_cajeroparam });
+
+
+                string listaproductosconcoma = "123456789";
+                string listaCantidadesComa = "5";
+                string[] listaProductosSep = listaproductosconcoma.Split(',');
+                string[] listaCantidadesComaSep = listaCantidadesComa.Split(',');
+                double preciodemomento = 0;
+                for (int i = 0; i < listaProductosSep.Length; i++)
+                {
+                    string sqlGetPrecio = "SELECT Precio_venta, Cantidad FROM Producto WHERE Codigo_barras=" + listaProductosSep[i] + " AND Codigo_sucursal=@codigo_sucursal ";
+                    command.CommandText = sqlGetPrecio;
+                    SqlDataReader reader = command.ExecuteReader();
+                    reader.Read();
+                    string precioString = reader[0].ToString();
+                    string cantidadDisponibleString = reader[1].ToString();
+                    reader.Close();
+                    double precioProducto = double.Parse(precioString);
+                    int cantidadDisponible = int.Parse(cantidadDisponibleString);
+                    preciodemomento = preciodemomento + (precioProducto * int.Parse(listaCantidadesComaSep[i]));
+                }
+                double VentaTotalSinDesc = preciodemomento;
+                string sqlgetDescuento = "SELECT Descuento, Impuesto FROM Producto WHERE Codigo_sucursal=@codigo_sucursal";
+                command.CommandText = sqlgetDescuento;
+                SqlDataReader reader1 = command.ExecuteReader();
+                reader1.Read();
+                string descuentoString = reader1[0].ToString();
+                string impuestoString = reader1[1].ToString();
+                reader1.Close();
+                int Porcentajedescuento = int.Parse(descuentoString);
+                double PorcentajedescuentoDecimales = Porcentajedescuento / 100.0;
+                int Porcentajeimpuesto = int.Parse(impuestoString);
+                double descuentoMoneda = VentaTotalSinDesc * (Porcentajedescuento / 100.0);
+                double VentaTotalconDesc = VentaTotalSinDesc - descuentoMoneda;
+                double impuestoMoneda = VentaTotalconDesc * (Porcentajeimpuesto / 100.0);
+                double Ventatotal = VentaTotalconDesc + impuestoMoneda;
+                var request = (HttpWebRequest)WebRequest.Create("http://localhost/BancaTec/l3m?numerotarjeta=" +
+                                                                    numerotarjeta + "&numeroseguridad=" +
+                                                                    codigoseguridad + "&fechaexpiracion=" +
+                                                                    fechaexpiraciontemp + "&monto=" +
+                                                                    Ventatotal.ToString() + "&comercio=" +
+                                                                    sucursaltemp);
+
+                var response = (HttpWebResponse)request.GetResponse();
+
+                var responseString = new StreamReader(response.GetResponseStream()).ReadToEnd();
+
+                XmlDocument doc = new XmlDocument();
+                doc.LoadXml(responseString);
+                XmlNode node = doc.DocumentElement.SelectSingleNode("/respuesta");
+                string text = node.OuterXml.Substring(20).Split('"')[0];
+
+                //////////////////////////////
+                if (text.Equals("ok"))
+                {
+
+                    SqlCommand command1 = new SqlCommand();
+                    command1.Connection = conn;
+                    command1.Connection.Open();
+
+
+                    SqlParameter Codigo_sucursalparam1 = new SqlParameter("@codigo_sucursal", sucursaltemp);
+                    SqlParameter Cedula_cajeroparam1 = new SqlParameter("@cedula_cajero", int.Parse(cajerotemp));
+
+                    command1.Parameters.AddRange(new SqlParameter[] { Codigo_sucursalparam1, Cedula_cajeroparam1 });
+
+                    string sqlAddVenta = "INSERT INTO Venta (Codigo_sucursal, Cedula_cajero) VALUES (@codigo_sucursal, @cedula_cajero)";
+                    command1.CommandText = sqlAddVenta;
+                    command1.ExecuteNonQuery();
+                    string sqlgetVentaID = "SELECT MAX(Codigo) FROM Venta ";
+                    command1.CommandText = sqlgetVentaID;
+                    int VentaID = (Int32)command1.ExecuteScalar();
+
+                    string listaproductosconcoma1 = "123456789";
+                    string listaCantidadesComa1 = "5";
+                    string[] listaProductosSep1 = listaproductosconcoma1.Split(',');
+                    string[] listaCantidadesComaSep1 = listaCantidadesComa1.Split(',');
+                    for (int i = 0; i < listaProductosSep1.Length; i++)
+                    {
+                        string sqlGetPrecio = "SELECT Precio_venta, Cantidad FROM Producto WHERE Codigo_barras=" + listaProductosSep1[i] + " AND Codigo_sucursal=@codigo_sucursal ";
+                        command1.CommandText = sqlGetPrecio;
+                        SqlDataReader reader = command1.ExecuteReader();
+                        reader.Read();
+                        string precioString = reader[0].ToString();
+                        string cantidadDisponibleString = reader[1].ToString();
+                        reader.Close();
+                        double precioProducto = double.Parse(precioString);
+                        string nuevoProductoenVenta = "INSERT INTO Productos_en_venta (Codigo_producto, Precio_individual, Cantidad, Codigo_venta, Precio_total) VALUES (" + listaProductosSep1[i] + ", " + precioProducto.ToString() + ", " + listaCantidadesComaSep1[i] + ", " + VentaID.ToString() + ", " + (int.Parse(listaCantidadesComaSep1[i]) * precioProducto).ToString() + " ) ";
+                        command1.CommandText = nuevoProductoenVenta;
+                        command1.ExecuteNonQuery();
+                        int cantidadDisponible = int.Parse(cantidadDisponibleString);
+                        string sqlReduceCantidadProducto = "UPDATE Producto SET Cantidad=" + (cantidadDisponible - int.Parse(listaCantidadesComaSep1[i])).ToString() + " WHERE Codigo_barras=" + listaProductosSep1[i] + " AND Codigo_sucursal=@codigo_sucursal ";
+                        command1.CommandText = sqlReduceCantidadProducto;
+                        command1.ExecuteNonQuery();
+                    }
+                    string sqlgetVentaTotal = "SELECT SUM(Precio_total) FROM Productos_en_venta WHERE Codigo_venta=" + VentaID.ToString() + " ";
+                    command1.CommandText = sqlgetVentaTotal;
+                    SqlDataReader reader2 = command1.ExecuteReader();
+                    reader2.Read();
+                    string obtenerSuma = reader2[0].ToString();
+                    reader2.Close();
+                    double VentaTotalSinDesc1 = double.Parse(obtenerSuma);
+                    string sqlgetDescuento1 = "SELECT Descuento, Impuesto FROM Producto WHERE Codigo_sucursal=@codigo_sucursal";
+                    command1.CommandText = sqlgetDescuento1;
+                    SqlDataReader reader11 = command1.ExecuteReader();
+                    reader11.Read();
+                    string descuentoString1 = reader11[0].ToString();
+                    string impuestoString1 = reader11[1].ToString();
+                    reader11.Close();
+                    int Porcentajedescuento1 = int.Parse(descuentoString1);
+                    double PorcentajedescuentoDecimales1 = Porcentajedescuento1 / 100.0;
+                    int Porcentajeimpuesto1 = int.Parse(impuestoString1);
+                    double descuentoMoneda1 = VentaTotalSinDesc1 * (Porcentajedescuento1 / 100.0);
+                    double VentaTotalconDesc1 = VentaTotalSinDesc1 - descuentoMoneda1;
+                    double impuestoMoneda1 = VentaTotalconDesc1 * (Porcentajeimpuesto1 / 100.0);
+                    double Ventatotal1 = VentaTotalconDesc1 + impuestoMoneda1;
+                    string sqlUpdateVenta = "UPDATE Venta SET Descuento=" + descuentoMoneda1.ToString() + ", Precio_total=" + Ventatotal1.ToString() + ", Impuesto=" + impuestoMoneda1.ToString() + " WHERE Codigo=" + VentaID.ToString() + " ";
+                    command1.CommandText = sqlUpdateVenta;
+                    command1.ExecuteNonQuery();
+                    command1.Connection.Close();
+                    string mesanje = "ok";
+                }
+                }
+
+
 
             #region "Test database Functionalities"
 

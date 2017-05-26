@@ -614,7 +614,8 @@ namespace RestWebService
                     }
                     else
                     {
-                        operations.AddVentaProductos(context);
+                        string mensaje = operations.AddVentaProductos(context);
+                        WriteResponse(mensaje);
                     }
                 }
                 #endregion               
